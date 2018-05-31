@@ -57,13 +57,14 @@ export default class UForm extends Component{
             visible: false, //新建窗口隐藏
             dataSource: [],
             count: data.length,
+            data:data,
             selectedRowKeys: [],
             tableRowKey: 0,
             isUpdate: false,
             loading: true,
             authRequest:true,
             passRequest:false,
-            rejectRequest:false
+            rejectRequest:false,
         };
     }
     //getData
@@ -82,6 +83,7 @@ export default class UForm extends Component{
     };
     //用户名输入
     onChangeUserName = (e) => {
+        debugger;
         const value = e.target.value;
         this.setState({
             userName: value,
@@ -89,12 +91,44 @@ export default class UForm extends Component{
     };
     //用户名搜索
     onSearchUserName = (value) => {
-        // console.log(value);
+        console.log(value);
         const { dataSource } = this.state;
         this.setState({
             dataSource: dataSource.filter(item => item.name.indexOf(value) !== -1),
             loading: false,
         })
+    };
+    //审核状态筛选
+    onSearchUserState = (value,event) => {
+        //console.log(value.target.value);
+        this.getData();
+        const { dataSource } = this.state;
+        var arr=dataSource.filter(function(item ){
+            return item.auditstate==value;
+        });
+        switch (event.target.textContent){
+            case '待审核请求':this.setState({
+                authRequest:true,
+                passRequest:false,
+                rejectRequest:false,
+                dataSource: arr,
+                loading: false,
+            });break;
+            case '已拒绝请求':this.setState({
+                authRequest:false,
+                passRequest:false,
+                rejectRequest:true,
+                dataSource: arr,
+                loading: false,
+            });break;
+            case '已通过请求':this.setState({
+                authRequest:false,
+                passRequest:true,
+                rejectRequest:false,
+                dataSource: arr,
+                loading: false,
+            });break;
+        }
     };
     //地址级联选择
     Cascader_Select = (value) => {
@@ -225,6 +259,16 @@ export default class UForm extends Component{
         const dataSource = [...this.state.dataSource];
         this.setState({ dataSource: dataSource.filter(item => item.key !== key) });
     };
+    //审核通过
+    onResolve = (key) => {
+        const dataSource = [...this.state.dataSource];
+        this.setState({ dataSource: dataSource.filter(item => item.key !== key) });
+    };
+    //审核未通过
+    onReject = (key) => {
+        const dataSource = [...this.state.dataSource];
+        this.setState({ dataSource: dataSource.filter(item => item.key !== key) });
+    };
     //点击修改
     editClick = (key) => {
         const form = this.form;
@@ -272,7 +316,7 @@ export default class UForm extends Component{
         this.setState({selectedRowKeys: selectedRowKeys});
     };
     render(){
-        const { userName, address, timeRange, dataSource, visible, isUpdate, loading } = this.state;
+        const { authRequest, passRequest,rejectRequest,userName, address, timeRange, dataSource, visible, isUpdate, loading } = this.state;
         const questiontxt = ()=>{
             return (
                 <p>
@@ -283,32 +327,32 @@ export default class UForm extends Component{
         };
         return(
             <div>
-                {/*<BreadcrumbCustom paths={['首页','表单']}/>*/}
-                <BreadcrumbCustom/>
+               {/* <BreadcrumbCustom paths={['首页','表单']}/>
+                <BreadcrumbCustom/>*/}
                 <div className='formBody'>
                     <Row gutter={16}>
                         <Col className="gutter-row" sm={8}>
-                            {/*<Search*/}
-                                {/*placeholder="Input Name"*/}
-                                {/*prefix={<Icon type="user" />}*/}
-                                {/*value={userName}*/}
-                                {/*onChange={this.onChangeUserName}*/}
-                                {/*onSearch={this.onSearchUserName}*/}
-                            {/*/>*/}
+                           {/* <Search
+                                placeholder="Input Name"
+                                prefix={<Icon type="user" />}
+                                value={userName}
+                                onChange={this.onChangeUserName}
+                                onSearch={this.onSearchUserName}
+                            />*/}
                             <Row gutter={16}>
                                 <Col className="gutter-row" sm={8} style={{padding:"0 0"}}>
                                     {/*<Button style={{borderRadius:0,width:"100%",borderRight:0}}>待审核请求</Button>*/}
                                     <div style={{padding:"4px 0",display: "inline-block",height:"28px",fontWeight:500,fontFamily:"inherit",fontSize:"12px",width:"100%",textAlign:"center",border: "1px solid transparent",borderColor:"#d9d9d9"}}>
-                                        <div style={{textAlign:"center",height:18}}>待审核请求</div>
+                                        <div onClick={this.onSearchUserState.bind(this,-1)} value='-1' style={{textAlign:"center",height:18}}>待审核请求</div>
                                     </div>
                                 </Col>
                                 <Col className="gutter-row" sm={8} style={{padding:"0 0 "}}>
-                                    <Button style={{borderRadius:0,width:"100%",borderRight:0}}>已通过请求</Button>
-                                    {/*<div style={{width:"100%",textAlign:"center"}}>已通过请求</div>*/}
+                                    {/*<Button onClick={this.onSearchUserState.bind(1)} style={{borderRadius:0,width:"100%",borderRight:0}} value={1}>已通过请求</Button>*/}
+                                    <div onClick={this.onSearchUserState.bind(this,1)} value='1' style={{width:"100%",textAlign:"center"}}>已通过请求</div>
                                 </Col>
                                 <Col className="gutter-row" sm={8} style={{padding:"0 0 "}}>
-                                    <Button style={{borderRadius:0,width:"100%"}}>已拒绝请求</Button>
-                                    {/*<div style={{width:"100%",textAlign:"center"}}>已拒绝请求</div>*/}
+                                    {/*<Button onClick={this.onSearchUserState.bind(0)} style={{borderRadius:0,width:"100%"}}>已拒绝请求</Button>*/}
+                                    <div onClick={this.onSearchUserState.bind(this,0)} value='0' style={{width:"100%",textAlign:"center"}}>已拒绝请求</div>
                                 </Col>
                             </Row>
                         </Col>
@@ -341,6 +385,9 @@ export default class UForm extends Component{
                         {/*</div>*/}
                     {/*</Row>*/}
                     <FormTable
+                        authRequest={authRequest}
+                        passRequest={passRequest}
+                        rejectRequest={rejectRequest}
                         dataSource={dataSource}
                         checkChange={this.checkChange}
                         onDelete={this.onDelete}
