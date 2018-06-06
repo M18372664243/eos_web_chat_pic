@@ -12,7 +12,7 @@ import UForm from '../form/Form';
 import noMatch from './404';
 
 const {Content, Footer} = Layout;
-
+var userName;
 export default class App extends Component {
     state = {
         collapsed: localStorage.getItem("mspa_SiderCollapsed") === "true",
@@ -32,6 +32,8 @@ export default class App extends Component {
         }
     }
 
+
+
     render() {
         const {collapsed} = this.state;
         const {location} = this.props;
@@ -41,16 +43,15 @@ export default class App extends Component {
         } else {
             name = location.state === undefined ? JSON.parse(localStorage.getItem("mspa_user")).username : location.state.username;
         }
-
         return (
             <Layout className="ant-layout-has-sider" style={{height: '100%'}}>
-                <SiderCustom collapsed={collapsed} path={location.pathname}/>
+                {/*<SiderCustom collapsed={collapsed} path={location.pathname}/>*/}
                 <Layout>
                     <HeaderCustom collapsed={collapsed} toggle={this.toggle} username={name}/>
                     <Content style={{margin: '0 16px'}}>
                         <Switch>
-                            <Route exact path={'/app'} component={MIndex} />
-                            <Route exact path={'/app/form'} component={UForm} />
+                            <Route exact path={'/app*'} component={UForm} />
+                            <Route exact path={'/app/form/'}  component={UForm}/>
                             <Route exact path={'/app/header/Calendars'} component={Calendars} />
                             <Route exact path={'/app/chart/echarts'} component={Echarts} />
                             <Route component={noMatch} />

@@ -9,6 +9,7 @@ const SubMenu = Menu.SubMenu;
 export default class HeaderCustom extends Component{
     constructor(props){
         super(props);
+        debugger;
         this.state = {
             collapsed: props.collapsed,
         }
@@ -31,32 +32,32 @@ export default class HeaderCustom extends Component{
         return(
             <Header style={{ background: '#fff', padding: 0 }} className="header">
                 <div style={{textAlign:'center',fontSize:"xx-large"}}>Athena用户身份认证系统</div>
-                {/*<Icon*/}
-                {/*className="trigger"*/}
-                {/*type={this.state.collapsed ? 'menu-unfold' : 'menu-fold'}*/}
-                {/*onClick={this.props.toggle}*/}
-                {/*/>*/}
-                {/*<Menu*/}
-                    {/*mode="horizontal"*/}
-                    {/*style={{ lineHeight: '64px', float: 'right' }}*/}
-                {/*>*/}
-                    {/*<Menu.Item key="schedule">*/}
-                        {/*<Link to="/app/header/Calendars">*/}
-                            {/*<Badge count={3} overflowCount={99} style={{height:'15px',lineHeight:'15px'}}>*/}
-                                {/*<Icon type="schedule" style={{fontSize:16, color: '#1DA57A' }}/>*/}
-                            {/*</Badge>*/}
-                        {/*</Link>*/}
-                    {/*</Menu.Item>*/}
-                    {/*<SubMenu */}
-                        {/*title={<span>*/}
-                            {/*<Icon type="user" style={{fontSize:16, color: '#1DA57A' }}/>{this.props.username}*/}
-                        {/*</span>}*/}
-                        {/*>*/}
-                        {/*<Menu.Item key="logout" style={{textAlign:'center'}} className="logout">*/}
-                            {/*<span onClick={this.logout}>logout</span>*/}
-                        {/*</Menu.Item>*/}
-                    {/*</SubMenu>*/}
-                {/*</Menu>*/}
+                <Icon
+                className="trigger"
+                type={this.state.collapsed ? 'menu-unfold' : 'menu-fold'}
+                onClick={this.props.toggle}
+                />
+                {/*<Menu
+                    mode="horizontal"
+                    style={{ lineHeight: '64px', float: 'right' }}
+                >
+                    <Menu.Item key="schedule">
+                        <Link to="/app/header/Calendars">
+                            <Badge count={3} overflowCount={99} style={{height:'15px',lineHeight:'15px'}}>
+                                <Icon type="schedule" style={{fontSize:16, color: '#1DA57A' }}/>
+                            </Badge>
+                        </Link>
+                    </Menu.Item>
+                    <SubMenu
+                        title={<span>
+                            <Icon type="user" style={{fontSize:16, color: '#1DA57A' }}/>{this.props.username}
+                        </span>}
+                        >
+                        <Menu.Item key="logout" style={{textAlign:'center'}} className="logout">
+                            <span onClick={this.logout}>logout</span>
+                        </Menu.Item>
+                    </SubMenu>
+                </Menu>*/}
             </Header>
         )
     }

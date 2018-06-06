@@ -1,11 +1,10 @@
 import React, { Component } from 'react';
-import { Table, Icon, Popconfirm } from 'antd';
+import { Table, Icon,Button} from 'antd';
 import moment from 'moment';
 
 export default class FormTable extends Component{
     constructor(props){
         super(props);
-
     }
 
     componentDidMount(){
@@ -14,7 +13,7 @@ export default class FormTable extends Component{
 
 
     render(){
-        const { authRequest,passRequest,rejectRequest,checkChange, onDelete, editClick, dataSource, loading } = this.props;
+        const { authRequest,passRequest,rejectRequest,checkChange,onResolve,onReject,getImg, onDelete, editClick,pagination, dataSource, loading } = this.props;
         const rowSelection = {
             onChange: checkChange,
             getCheckboxProps: record => ({
@@ -112,16 +111,16 @@ export default class FormTable extends Component{
                     title: '提交时间',
                     dataIndex: 'committime',
                     sorter: (a, b) => moment(a.committime) - moment(b.committime),
-                    width:150,
+                    width:120,
                 }, {
                     title: '账号',
                     dataIndex: 'account',
                     sorter: (a, b) => moment(a.account) - moment(b.account),
-                    width:150,
+                    width:80,
                 },{
                     title: '姓名',
                     dataIndex: 'name',
-                    width: 100,
+                    width: 80,
                 }, {
                     title: '性别',
                     dataIndex: 'sex',
@@ -142,17 +141,22 @@ export default class FormTable extends Component{
                 }, {
                     title: '证明图片',
                     dataIndex: 'provimg',
-                    width: 100,
+                    width: 80,
+
+                    className:'imgtd',
+                    render:(text, record) =>
+                        <Button type="primary" icon="search" size="large" onClick={() => getImg(record.key,record.name,record.companyname)}>查看图片</Button>
                 },{
                     title: '操作',
                     dataIndex: 'opera',
-                    width:100,
+                    width:80,
+                    className:'imgtd',
                     render: (text, record) =>
                         <div className='opera'>
-                    <span onClick={() => onDelete(record.key)}>
+                    <span onClick={() => onResolve(record.key)}>
                          <Icon type="check" /> 通过
                     </span><br />
-                            <span onClick={() => onDelete(record.key)}>
+                            <span onClick={() => onReject(record.key)}>
                             <Icon type="close" /> 拒绝
                         </span>
                         </div>
@@ -163,16 +167,16 @@ export default class FormTable extends Component{
                     title: '提交时间',
                     dataIndex: 'committime',
                     sorter: (a, b) => moment(a.committime) - moment(b.committime),
-                    width:150,
+                    width:120,
                 }, {
                     title: '账号',
                     dataIndex: 'account',
                     sorter: (a, b) => moment(a.account) - moment(b.account),
-                    width:150,
+                    width:80,
                 },{
                     title: '姓名',
                     dataIndex: 'name',
-                    width: 100,
+                    width: 80,
                 }, {
                     title: '性别',
                     dataIndex: 'sex',
@@ -193,7 +197,11 @@ export default class FormTable extends Component{
                 }, {
                     title: '证明图片',
                     dataIndex: 'provimg',
-                    width: 100,
+                    width:80,
+
+                    className:'imgtd',
+                    render:(text, record) =>
+                        <Button type="primary" icon="search" size="small" onClick={() => getImg(record.key)}>查看图片</Button>
                 },{
                     title: '审核人',
                     dataIndex: 'auditman',
@@ -201,7 +209,7 @@ export default class FormTable extends Component{
                 },{
                     title: '审核时间',
                     dataIndex: 'audittime',
-                    width: 150,
+                    width: 120,
                 }]
         }
         return(
@@ -213,6 +221,8 @@ export default class FormTable extends Component{
                 scroll={{x:'100%'}}
                 className='formTable'
                 loading={loading}
+                scroll={{ x: 1000 }}
+                pagination={pagination}
             />
         )
     }
