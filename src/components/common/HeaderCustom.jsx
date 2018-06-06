@@ -9,7 +9,6 @@ const SubMenu = Menu.SubMenu;
 export default class HeaderCustom extends Component{
     constructor(props){
         super(props);
-        debugger;
         this.state = {
             collapsed: props.collapsed,
         }
@@ -30,7 +29,7 @@ export default class HeaderCustom extends Component{
     }
     render(){
         return(
-            <Header style={{ background: '#fff', padding: 0 }} className="header">
+            <Header style={{ background: '#fff', padding: 0,margin:"0 16px" }} className="header">
                 <div style={{textAlign:'center',fontSize:"xx-large"}}>Athena用户身份认证系统</div>
                 <Icon
                 className="trigger"

@@ -53,7 +53,7 @@ class SureMessage extends Component{
     };*/
     render(){
         const { visible, onCancel, onCreate, form, okText, title } = this.props;
-        debugger;
+        
         const { getFieldDecorator } = form;
         const { autoCompleteResult } = this.state;
         const FormItemLayout = {

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import './form.less';
 import axios from 'axios';
+import qs from 'qs';
 import Mock from 'mockjs';
 import moment from 'moment';
 import { Row, Col, Input, Icon, Cascader, DatePicker, Button, Tooltip, Popconfirm ,Radio,Modal} from 'antd';
@@ -12,7 +13,7 @@ import CollectionCreateForm from './CustomizedForm';
 import SureMessageForm from './SureMessage';
 import ProveImgForm from './ProveImg';
 import FormTable from './FormTable';
-
+import config from '../config/config';
 const Search = Input.Search;
 const InputGroup = Input.Group;
 const options = [];
@@ -55,7 +56,6 @@ export default class UForm extends Component{
     constructor(props) {
         super(props);
         const { location,params } = this.props;
-        debugger;
         this.state = {
             total:10,
             page:1,
@@ -82,20 +82,52 @@ export default class UForm extends Component{
             name:'',
         };
     }
-    //getData
-    getData = () => {
-        axios.get('/data')
-            .then(function (response) {
-                // console.log(response.data);
-                dataSourceAll = response.data;
+    getData = (type,offset) => {
+        var params;
+        if(type ==undefined || type==null){
+            type=1
+        }
+        params = "type="+type;
+        if (offset ==undefined || offset == null){
+            offset =0;
+        }
+        params ="?"+params+"&offset="+offset;
+
+        axios.get(config.testUrl+params,{"Content-Type":'application/json'}).then(function (response){
+            if(response.data.data.result>0){
+                var dataArr = response.data.data.userInfo;
+                var userInfo =[{
+                    "committime":"2016-11-11 11:11:11",
+                    "account":123234531,
+                    "key": 0,
+                    "name": "123",
+                    "sex": "女",
+                    "companyname":"火币网",
+                    "position":"副经理",
+                    "provimg":"",
+                    "auditman":"张三",
+                    "audittime":"2017-11-11 11:11:11",
+                    "auditstate":-1,
+                    "age": "23",
+                    "address": "江苏省 / 南京市 / 栖霞区",
+                    "phone": "17322103020",
+                    "email": "wy0611@163.com",
+                    "website": "wy0611.net",
+                    "createtime": "2017-11-11 11:11:11"
+                }];
+                for(var i =0;i <dataArr.length;i++){
+
+                }
                 this.setState({
-                    dataSource: response.data.filter(item=>item.auditstate==-1),
+                    dataSource: userInfo,
                     loading:false
                 })
-            }.bind(this))
-            .catch(function (error) {
-                console.log(error);
-            })
+            }else {
+                alert(response.data.msg);
+            }
+        }.bind(this)).catch(function (err) {
+            console.log("err:"+err)
+        })
     };
 
 
@@ -119,7 +151,7 @@ export default class UForm extends Component{
     };
     //用户名输入
     /*onChangeUserName = (e) => {
-        debugger;
+        
         const value = e.target.value;
         this.setState({
             userName: value,
@@ -478,9 +510,9 @@ export default class UForm extends Component{
                                 </Col>
                             </Row>*/}
                             <RadioGroup  onChange={this.onSearchUserState} defaultValue="-1">
-                                <RadioButton value="-1">待审核请求</RadioButton>
-                                <RadioButton value="1">已通过请求</RadioButton>
-                                <RadioButton value="0">已拒绝请求</RadioButton>
+                                <RadioButton style={{borderColor:"#d9d9d9",color:"rgba(0,0,0,0.65)",fontWeight:"bold"}} value="-1">待审核请求</RadioButton>
+                                <RadioButton style={{borderColor:"#d9d9d9",color:"rgba(0,0,0,0.65)",fontWeight:"bold"}} value="1">已通过请求</RadioButton>
+                                <RadioButton style={{borderColor:"#d9d9d9",color:"rgba(0,0,0,0.65)",fontWeight:"bold"}} value="0">已拒绝请求</RadioButton>
                             </RadioGroup>
                         </Col>
                         <Col className="gutter-row" sm={8}>

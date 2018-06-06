@@ -19,7 +19,7 @@ class ProveImg extends Component{
     }
     render(){
         const { visible, onCancel, title ,imgSrc,name,companyname} = this.props;
-        debugger;
+        
         const { autoCompleteResult } = this.state;
         const FormItemLayout = {
             labelCol: { span: 5 },
