@@ -50,7 +50,7 @@ export default class App extends Component {
                     <HeaderCustom collapsed={collapsed} toggle={this.toggle} username={name}/>
                     <Content style={{margin: '0 16px'}}>
                         <Switch>
-                            <Route exact path={'/app*'} component={UForm} />
+                            <Route exact path={'/app'} component={UForm} />
                             <Route exact path={'/app/form/'}  component={UForm}/>
                             <Route exact path={'/app/header/Calendars'} component={Calendars} />
                             <Route exact path={'/app/chart/echarts'} component={Echarts} />

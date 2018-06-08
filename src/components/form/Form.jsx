@@ -5,7 +5,7 @@ import qs from 'qs';
 import Mock from 'mockjs';
 import moment from 'moment';
 import { Row, Col, Input, Icon, Cascader, DatePicker, Button, Tooltip, Popconfirm ,Radio,Modal} from 'antd';
-
+import { Pagination } from 'antd';
 import BreadcrumbCustom from '../common/BreadcrumbCustom';
 import address from './request/address.json';
 import data from './request/data.json';
@@ -57,9 +57,8 @@ export default class UForm extends Component{
         super(props);
         const { location,params } = this.props;
         this.state = {
-            total:10,
-            page:1,
-            size:3,
+            total:0,
+            size:10,
             userName: '',
             address: '',
             timeRange: '',
@@ -78,11 +77,13 @@ export default class UForm extends Component{
             imgSrc:'',
             imgVisible:false,
             key:'',
+            auditstate:1,
             companyname:'',
             name:'',
         };
     }
     getData = (type,offset) => {
+        debugger;
         var params;
         if(type ==undefined || type==null){
             type=1
@@ -108,7 +109,7 @@ export default class UForm extends Component{
                     "provimg":"",
                     "auditman":"张三",
                     "audittime":"2017-11-11 11:11:11",
-                    "auditstate":-1,
+                    "auditstate":0,
                     "age": "23",
                     "address": "江苏省 / 南京市 / 栖霞区",
                     "phone": "17322103020",
@@ -130,11 +131,19 @@ export default class UForm extends Component{
                     if(dataArr[i].userInfoEntity.gender==1){
                         user.sex="女";
                     }
-                    //user.companyname =dataArr[i]
-
+                    user.companyname =dataArr[i].userInfoEntity.company;
+                    user.position=dataArr[i].userInfoEntity.major;
+                    user.provimg=dataArr[i].pic;
+                    user.auditman=dataArr[i].auditor;
+                    user.audittime=this.parseDate(dataArr[i].auditTime);
+                    data.push(user);
                 }
+
+                // data=userInfo;
+                // dataSourceAll=data;
                 this.setState({
-                    dataSource: userInfo,
+                    total:data.length,
+                    dataSource: data,
                     loading:false
                 })
             }else {
@@ -188,6 +197,7 @@ export default class UForm extends Component{
         })
     };*/
     //审核状态筛选
+
     onSearchUserState = (value,event) => {
         //console.log(value.target.value);
         //this.getData();
@@ -218,7 +228,7 @@ export default class UForm extends Component{
                 loading: false,
             });break;
         }*/
-        var arr=dataSourceAll.filter(function(item ){
+        /*var arr=dataSourceAll.filter(function(item ){
             return item.auditstate==value.target.value;
         });
         switch (value.target.value){
@@ -243,7 +253,8 @@ export default class UForm extends Component{
                 dataSource: arr,
                 loading: false,
             });break;
-        }
+        }*/
+        this.getData(value.target.value,undefined);
         /*axios.get('/data')
             .then(function (response) {
                 // console.log(response.data);
@@ -349,7 +360,7 @@ export default class UForm extends Component{
         this.form = form;
     };
     //提交认证信息
-    handleCreate = () => {
+    handleCreate = (uid,auditstatus) => {
         const dataSource = [...this.state.dataSource];
         this.setState({ dataSource: dataSource.filter(item => item.key !== this.state.key)});
         const form = this.form;
@@ -410,10 +421,11 @@ export default class UForm extends Component{
         this.setState({ dataSource: dataSource.filter(item => item.key !== key) });
     };
     //审核通过
-    onResolve = (key) => {
+    onResolve = (key,auditstate) => {
         this.setState({
             visible: true,
             key:key,
+            auditstate:auditstate,
         })
 
     };
@@ -480,13 +492,21 @@ export default class UForm extends Component{
     checkChange = (selectedRowKeys) => {
         this.setState({selectedRowKeys: selectedRowKeys});
     };
+    pageChange=(current, pageSize)=>{
+        const {auditstate}=this.state;
+        this.getData(auditstate,current-1)
+    };
     render(){
-        const {total, page,size,authRequest, passRequest,rejectRequest,userName, address, timeRange, dataSource, visible, isUpdate, loading,imgSrc,name,companyname,imgVisible } = this.state;
+        const {total, size,authRequest, passRequest,rejectRequest,userName, address, timeRange, dataSource, visible, isUpdate, loading,imgSrc,name,companyname,imgVisible } = this.state;
         let pagination = {
             total: total,
-            defaultCurrent: page,
-            pageSize: 8,
+            defaultCurrent: 1,
+            pageSize: size,
+            hideOnSinglePage:true,
             showSizeChanger: false,
+            onChange:(current, pageSize) => {
+                this.pageChange(current, pageSize)
+            },
            }
         const questiontxt = ()=>{
             return (
@@ -530,10 +550,10 @@ export default class UForm extends Component{
                                     </div>
                                 </Col>
                             </Row>*/}
-                            <RadioGroup  onChange={this.onSearchUserState} defaultValue="-1">
-                                <RadioButton style={{borderColor:"#d9d9d9",color:"rgba(0,0,0,0.65)",fontWeight:"bold"}} value="-1">待审核请求</RadioButton>
-                                <RadioButton style={{borderColor:"#d9d9d9",color:"rgba(0,0,0,0.65)",fontWeight:"bold"}} value="1">已通过请求</RadioButton>
-                                <RadioButton style={{borderColor:"#d9d9d9",color:"rgba(0,0,0,0.65)",fontWeight:"bold"}} value="0">已拒绝请求</RadioButton>
+                            <RadioGroup  onChange={this.onSearchUserState} defaultValue="1">
+                                <RadioButton style={{borderColor:"#d9d9d9",color:"rgba(0,0,0,0.65)",fontWeight:"bold"}} value="1">待审核请求</RadioButton>
+                                <RadioButton style={{borderColor:"#d9d9d9",color:"rgba(0,0,0,0.65)",fontWeight:"bold"}} value="0">已通过请求</RadioButton>
+                                <RadioButton style={{borderColor:"#d9d9d9",color:"rgba(0,0,0,0.65)",fontWeight:"bold"}} value="2">已拒绝请求</RadioButton>
                             </RadioGroup>
                         </Col>
                         <Col className="gutter-row" sm={8}>

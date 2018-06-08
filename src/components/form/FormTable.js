@@ -78,7 +78,7 @@ export default class FormTable extends Component{
                     className:'imgtd',
                     render:(text, record) =>
                         <div className='opera'>
-                            <span onClick={() => onDelete(record.key)}>
+                            <span onClick={() => onDelete(record.key,record.auditstate)}>
                                 <Icon type="check" /> 通过
                             </span><br />
                             <span onClick={() => onDelete(record.key)}>
