@@ -93,8 +93,9 @@ export default class UForm extends Component{
         }
         params ="?"+params+"&offset="+offset;
 
-        axios.get(config.testUrl+params,{"Content-Type":'application/json'}).then(function (response){
+        axios.get(config.baseUrl+params,{"Content-Type":'application/json'}).then(function (response){
             if(response.data.data.result>0){
+
                 var dataArr = response.data.data.userInfo;
                 var userInfo =[{
                     "committime":"2016-11-11 11:11:11",
@@ -115,7 +116,21 @@ export default class UForm extends Component{
                     "website": "wy0611.net",
                     "createtime": "2017-11-11 11:11:11"
                 }];
+                var data =[];
+
                 for(var i =0;i <dataArr.length;i++){
+
+                    var user ={}
+                    user.committime=this.parseDate(dataArr[i].submitTime);
+                    user.account = dataArr[i].uid;
+                    user.name = dataArr[i].userInfoEntity.name;
+                    if(dataArr[i].userInfoEntity.gender==0){
+                        user.sex="男";
+                    }
+                    if(dataArr[i].userInfoEntity.gender==1){
+                        user.sex="女";
+                    }
+                    //user.companyname =dataArr[i]
 
                 }
                 this.setState({
@@ -130,7 +145,13 @@ export default class UForm extends Component{
         })
     };
 
-
+    parseDate = (timeStamp) =>{
+        var date= new Date(timeStamp*1000)
+        var year =date.getFullYear()+ '-';
+        var month = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1) + '-';
+        var day = date.getDate() + ' ';
+        return year+month+day;
+    }
 
     //查看图片
     getImg = (value,name,companyname) => {
