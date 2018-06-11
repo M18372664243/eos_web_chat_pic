@@ -6,6 +6,7 @@ import App from '../components/common/App';
 import Login from '../components/common/Login';
 import Home from '../components/common/Home';
 import NoMatch from '../components/common/404';
+import Form from '../components/form/Form';
 
 class MRoute extends Component {
   render() {
@@ -13,7 +14,7 @@ class MRoute extends Component {
       <Router history={history}>
         <Switch>
           <Route exact path="/" component={Home}/>
-          <Route path="/app" component={App}/>
+          <Route exact path="/app/form" component={Form}/>
           <Route path="/login" component={Login}/>
           <Route component={NoMatch}/>
         </Switch>

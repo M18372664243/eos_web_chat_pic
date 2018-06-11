@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import './form.less';
 import axios from 'axios';
 import qs from 'qs';
-import Mock from 'mockjs';
 import moment from 'moment';
 import { Row, Col, Input, Icon, Cascader, DatePicker, Button, Tooltip, Popconfirm ,Radio,Modal} from 'antd';
 import { Pagination } from 'antd';
@@ -20,8 +19,6 @@ const options = [];
 const { RangePicker } = DatePicker;
 var RadioButton = Radio.Button;
 var RadioGroup = Radio.Group;
-Mock.mock('/address', address);
-Mock.mock('/data', data);
 var dataSourceAll = []
 var imgSrc=''
 //数组中是否包含某项
@@ -51,11 +48,11 @@ function replace(arr, item, place){ //arr 数组,item 数组其中一项, place 
     });
     return arr;
 }
-
+var uid;
+var authType;
 export default class UForm extends Component{
     constructor(props) {
         super(props);
-        const { location,params } = this.props;
         this.state = {
             total:0,
             size:10,
@@ -70,7 +67,7 @@ export default class UForm extends Component{
             tableRowKey: 0,
             isUpdate: false,
             isSure:false,
-            loading: true,
+            loading: false,
             authRequest:true,
             passRequest:false,
             rejectRequest:false,
@@ -82,8 +79,12 @@ export default class UForm extends Component{
             name:'',
         };
     }
+
+    componentDidMount(){
+        this.getData();
+    }
+
     getData = (type,offset) => {
-        debugger;
         var params;
         if(type ==undefined || type==null){
             type=1
@@ -93,35 +94,13 @@ export default class UForm extends Component{
             offset =0;
         }
         params ="?"+params+"&offset="+offset;
-
-        axios.get(config.baseUrl+params,{"Content-Type":'application/json'}).then(function (response){
+        axios.get(config.baseUrl+"authentication/v1/getApplys"+params,{headers:{"Content-Type":'application/json'}}).then(function (response){
             if(response.data.data.result>0){
-
                 var dataArr = response.data.data.userInfo;
-                var userInfo =[{
-                    "committime":"2016-11-11 11:11:11",
-                    "account":123234531,
-                    "key": 0,
-                    "name": "123",
-                    "sex": "女",
-                    "companyname":"火币网",
-                    "position":"副经理",
-                    "provimg":"",
-                    "auditman":"张三",
-                    "audittime":"2017-11-11 11:11:11",
-                    "auditstate":0,
-                    "age": "23",
-                    "address": "江苏省 / 南京市 / 栖霞区",
-                    "phone": "17322103020",
-                    "email": "wy0611@163.com",
-                    "website": "wy0611.net",
-                    "createtime": "2017-11-11 11:11:11"
-                }];
                 var data =[];
-
                 for(var i =0;i <dataArr.length;i++){
-
                     var user ={}
+                    user.key = dataArr[i].uid;
                     user.committime=this.parseDate(dataArr[i].submitTime);
                     user.account = dataArr[i].uid;
                     user.name = dataArr[i].userInfoEntity.name;
@@ -138,14 +117,44 @@ export default class UForm extends Component{
                     user.audittime=this.parseDate(dataArr[i].auditTime);
                     data.push(user);
                 }
-
-                // data=userInfo;
-                // dataSourceAll=data;
-                this.setState({
-                    total:data.length,
-                    dataSource: data,
-                    loading:false
-                })
+                if(type !=undefined || type !=null){
+                    if(type == 1){
+                        this.setState({
+                            total:data.length,
+                            dataSource: data,
+                            loading:false,
+                            authRequest:true,
+                            passRequest:false,
+                            rejectRequest:false
+                        })
+                    }
+                    if(type == 0){
+                        this.setState({
+                            total:data.length,
+                            dataSource: data,
+                            loading:false,
+                            authRequest:false,
+                            passRequest:true,
+                            rejectRequest:false
+                        })
+                    }
+                    if(type == 2){
+                        this.setState({
+                            total:data.length,
+                            dataSource: data,
+                            loading:false,
+                            authRequest:false,
+                            passRequest:false,
+                            rejectRequest:true
+                        })
+                    }
+                }else {
+                    this.setState({
+                        total:data.length,
+                        dataSource: data,
+                        loading:false
+                    })
+                }
             }else {
                 alert(response.data.msg);
             }
@@ -155,7 +164,7 @@ export default class UForm extends Component{
     };
 
     parseDate = (timeStamp) =>{
-        var date= new Date(timeStamp*1000)
+        var date= new Date(timeStamp)
         var year =date.getFullYear()+ '-';
         var month = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1) + '-';
         var day = date.getDate() + ' ';
@@ -163,40 +172,22 @@ export default class UForm extends Component{
     }
 
     //查看图片
-    getImg = (value,name,companyname) => {
-        axios.get('/data')
-            .then(function (response) {
-                // console.log(response.data);
-                imgSrc = response.data;
-                this.setState({
-                    name:name,
-                    companyname:companyname,
-                    imgSrc:'imgSrc',
-                    imgVisible:true
-                })
-            }.bind(this))
-            .catch(function (error) {
-                console.log(error);
-            })
-    };
-    //用户名输入
-    /*onChangeUserName = (e) => {
-        
-        const value = e.target.value;
-        this.setState({
-            userName: value,
-        })
-    };*/
-    //用户名搜索
-    /*onSearchUserName = (value) => {
-        console.log(value);
-        const { dataSource } = this.state;
-        this.setState({
-            dataSource: dataSource.filter(item => item.name.indexOf(value) !== -1),
-            loading: false,
-        })
-    };*/
-    //审核状态筛选
+    // getImg = (value,name,companyname) => {
+    //     axios.get('/data')
+    //         .then(function (response) {
+    //             // console.log(response.data);
+    //             imgSrc = response.data;
+    //             this.setState({
+    //                 name:name,
+    //                 companyname:companyname,
+    //                 imgSrc:'imgSrc',
+    //                 imgVisible:true
+    //             })
+    //         }.bind(this))
+    //         .catch(function (error) {
+    //             console.log(error);
+    //         })
+    // };
 
     onSearchUserState = (value,event) => {
         //console.log(value.target.value);
@@ -268,127 +259,55 @@ export default class UForm extends Component{
                 console.log(error);
             })*/
     };
-    //地址级联选择
-    /*Cascader_Select = (value) => {
-        const { dataSource } = this.state;
-        if(value.length===0){
-            this.setState({
-                address: value,
-                dataSource: [],
-            });
-            this.getData();
-        }else{
-            this.setState({
-                address: value,
-                dataSource: dataSource.filter(item => item.address === value.join(' / '))
-            });
-        }
-    };*/
-    //时间选择
+
     RangePicker_Select = (date, dateString) => {
         // console.log(date, dateString);
         const { dataSource } = this.state;
         const startime = moment(dateString[0]);
         const endtime = moment(dateString[1]);
-        if(date.length===0){
-            this.setState({
-                timeRange: date,
-                dataSource: [],
-            });
-            this.getData();
-        }else{
-            this.setState({
-                timeRange: date,
-                dataSource: dataSource.filter(item => (moment(item.createtime.substring(0,10)) <= endtime  && moment(item.createtime.substring(0,10)) >= startime) === true)
-            });
-        }
-    };
-    //渲染
-    componentDidMount(){
-        axios.get('/address')
-            .then(function (response) {
-                response.data.map(function(province){
-                    options.push({
-                        value: province.name,
-                        label: province.name,
-                        children: province.city.map(function(city){
-                            return {
-                                value: city.name,
-                                label: city.name,
-                                children: city.area.map(function(area){
-                                    return {
-                                        value: area,
-                                        label: area,
-                                    }
-                                })
-                            }
-                        }),
-                    })
-                });
-            })
-            .catch(function (error) {
-                console.log(error);
-            });
-        this.getData();
-    }
-    //搜索按钮
-    /*btnSearch_Click = () => {
 
-    };*/
-    //重置按钮
-    /*btnClear_Click = () => {
-        this.setState({
-            userName: '',
-            address: '',
-            timeRange: '',
-            dataSource: [],
-            count: data.length,
-        });
-        this.getData();
-    };*/
-    //新建信息弹窗
-    /*CreateItem = () => {
-        this.setState({
-            visible: true,
-            isUpdate: false,
-        });
-        const form = this.form;
-        form.resetFields();
-    };*/
-    //接受新建表单数据
+        // if(date.length===0){
+        //     this.setState({
+        //         timeRange: date,
+        //         dataSource: [],
+        //     });
+        //     this.getData();
+        // }else{
+        //     this.setState({
+        //         timeRange: date,
+        //         dataSource: dataSource.filter(item => (moment(item.createtime.substring(0,10)) <= endtime  && moment(item.createtime.substring(0,10)) >= startime) === true)
+        //     });
+        // }
+
+    };
     saveFormRef = (form) => {
         this.form = form;
     };
     //提交认证信息
-    handleCreate = (uid,auditstatus) => {
+    handleCreate = (uid,type) => {
+        var auth;
+        var that = this;
+        if(type =="pass"){
+            auth =0;
+        }
+        if(type =="reject"){
+            auth =2;
+        }
         const dataSource = [...this.state.dataSource];
         this.setState({ dataSource: dataSource.filter(item => item.key !== this.state.key)});
         const form = this.form;
-       /* //审核时间
-        var provDate=moment().format("YYYY-MM-DD hh:mm:ss");
-        const {username}=this.props;
-        alert(this.props.username);
-        axios.get('/data')
-            .then(function (response) {
-                this.setState({
-                    visible: false,
-                    dataSource:response.data
-
-                });
-            }.bind(this))
-            .catch(function (error) {
-                console.log(error);
-            });*/
         form.validateFields((err, values) => {
             if (err) {
                 return;
             }
-            console.log('Received values of form: ', values);
-
-            /*values.key = count;*/
-            /*values.address = values.address.join(" / ");*/
             values.createtime = moment().format("YYYY-MM-DD hh:mm:ss");
-
+            var coment = values.name;
+            var name =localStorage.getItem("userName");
+            axios.get(config.baseUrl+"authentication/v1/updateApply?uid="+uid+"&type="+auth+"&coment="+coment+"&name="+name,{headers:{"Content-Type":"application/json"}}).then(function (res) {
+                that.getData()
+            }).catch(function (err) {
+                console.log("err"+err);
+            })
             form.resetFields();
             this.setState({
                 visible: false,
@@ -405,15 +324,9 @@ export default class UForm extends Component{
     handleCancelImg=()=>{
         this.setState({ imgVisible: false });
     }
-    //批量删除
-    /*MinusClick = () => {
-        const { dataSource, selectedRowKeys } = this.state;
-        this.setState({
-            dataSource: dataSource.filter(item => !isContains(selectedRowKeys, item.key)),
-        });
-    };*/
-    //单个删除
-    onDelete = (key) => {
+    onDelete = (key,type) => {
+        uid = key;
+        authType = type
         this.setState({
             visible: true,
         })
@@ -496,8 +409,21 @@ export default class UForm extends Component{
         const {auditstate}=this.state;
         this.getData(auditstate,current-1)
     };
+    getApplys =(type)=>{
+        if("auth" == type){
+            this.getData(1,0)
+        }
+        if("pass" == type){
+            this.getData(0,0)
+        }
+        if("reject" == type){
+            this.getData(2,0)
+        }
+    }
+
+
     render(){
-        const {total, size,authRequest, passRequest,rejectRequest,userName, address, timeRange, dataSource, visible, isUpdate, loading,imgSrc,name,companyname,imgVisible } = this.state;
+        const {total, size,authRequest, passRequest,rejectRequest, address, timeRange, dataSource, visible, isUpdate, loading,imgSrc,name,companyname,imgVisible } = this.state;
         let pagination = {
             total: total,
             defaultCurrent: 1,
@@ -518,72 +444,45 @@ export default class UForm extends Component{
         };
         return(
             <div>
-               {/* <BreadcrumbCustom paths={['首页','表单']}/>
-                <BreadcrumbCustom/>*/}
                 <div className='formBody'>
                     <Row gutter={24}>
                         <Col className="gutter-row" sm={8}>
-                           {/* <Search
-                                placeholder="Input Name"
-                                prefix={<Icon type="user" />}
-                                value={userName}
-                                onChange={this.onChangeUserName}
-                                onSearch={this.onSearchUserName}
-                            />*/}
-                            {/*<Row gutter={16}>
-                                <Col className="gutter-row" sm={8} style={{padding:"0 0"}}>
-                                    <Button style={{borderRadius:0,width:"100%",borderRight:0}}>待审核请求</Button>
-                                    <div style={{padding:"4px 0",display: "inline-block",height:"28px",fontWeight:500,fontFamily:"inherit",fontSize:"12px",width:"100%",textAlign:"center",border: "1px solid transparent",borderColor:"#d9d9d9"}}>
-                                        <div onClick={this.onSearchUserState.bind(this,-1)}  style={{textAlign:"center",height:18}}>待审核请求</div>
+                            <div style={{display:"flex"}}>
+                                {this.state.authRequest?
+                                    <div onClick={()=>{this.getApplys("auth")}} style={{backgroundColor:"#bfbfbf",lineHeight:"20px",fontSize:"12px",border:"1px solid #bfbfbf",height:24,width:94,padding:"0px 16px",fontWeight:500}}>
+                                        待审核请求
                                     </div>
-                                </Col>
-                                <Col className="gutter-row" sm={8} style={{padding:"0 0 "}}>
-                                    <Button onClick={this.onSearchUserState.bind(1)} style={{borderRadius:0,width:"100%",borderRight:0}} value={1}>已通过请求</Button>
-                                    <div style={{padding:"4px 0",display: "inline-block",height:"28px",fontWeight:500,fontFamily:"inherit",fontSize:"12px",width:"100%",textAlign:"center",borderBottom: "1px solid transparent",borderTop: "1px solid transparent",borderColor:"#d9d9d9"}}>
-                                        <div onClick={this.onSearchUserState.bind(this,1)}  style={{width:"100%",textAlign:"center"}}>已通过请求</div>
+                                    :
+                                    <div onClick={()=>{this.getApplys("auth")}} style={{lineHeight:"20px",fontSize:"12px",border:"1px solid #ddd",height:24,width:94,padding:"0px 16px",fontWeight:500}}>
+                                        待审核请求
                                     </div>
-                                </Col>
-                                <Col className="gutter-row" sm={8} style={{padding:"0 0 "}}>
-                                    <Button onClick={this.onSearchUserState.bind(0)} style={{borderRadius:0,width:"100%"}}>已拒绝请求</Button>
-                                    <div style={{padding:"4px 0",display: "inline-block",height:"28px",fontWeight:500,fontFamily:"inherit",fontSize:"12px",width:"100%",textAlign:"center",border: "1px solid transparent",borderColor:"#d9d9d9"}}>
-                                        <div onClick={this.onSearchUserState.bind(this,0)}  style={{width:"100%",textAlign:"center"}}>已拒绝请求</div>
+                                }
+                                {this.state.passRequest?
+                                    <div onClick={()=>{this.getApplys("pass")}} style={{backgroundColor:"#bfbfbf",lineHeight:"20px",fontSize:"12px",border:"1px solid #bfbfbf",height:24,width:94,padding:"0px 16px",fontWeight:500}}>
+                                        已通过请求
                                     </div>
-                                </Col>
-                            </Row>*/}
-                            <RadioGroup  onChange={this.onSearchUserState} defaultValue="1">
-                                <RadioButton style={{borderColor:"#d9d9d9",color:"rgba(0,0,0,0.65)",fontWeight:"bold"}} value="1">待审核请求</RadioButton>
-                                <RadioButton style={{borderColor:"#d9d9d9",color:"rgba(0,0,0,0.65)",fontWeight:"bold"}} value="0">已通过请求</RadioButton>
-                                <RadioButton style={{borderColor:"#d9d9d9",color:"rgba(0,0,0,0.65)",fontWeight:"bold"}} value="2">已拒绝请求</RadioButton>
-                            </RadioGroup>
+                                    :
+                                    <div onClick={()=>{this.getApplys("pass")}} style={{lineHeight:"20px",fontSize:"12px",border:"1px solid #ddd",height:24,width:94,padding:"0px 16px",fontWeight:500}}>
+                                        已通过请求
+                                    </div>
+                                }
+                                {this.state.rejectRequest?
+                                    <div onClick={()=>{this.getApplys("reject")}} style={{backgroundColor:"#bfbfbf",lineHeight:"20px",fontSize:"12px",border:"1px solid #bfbfbf",height:24,width:94,padding:"0px 16px",fontWeight:500}}>
+                                        已拒绝请求
+                                    </div>
+                                    :
+                                    <div onClick={()=>{this.getApplys("reject")}} style={{lineHeight:"20px",fontSize:"12px",border:"1px solid #ddd",height:24,width:94,padding:"0px 16px",fontWeight:500}}>
+                                        已拒绝请求
+                                    </div>
+                                }
+                            </div>
                         </Col>
                         <Col className="gutter-row" sm={8}>
-                            {/*<InputGroup compact>*/}
-                                {/*<Cascader style={{ width: '100%' }} options={options} placeholder="Select Address" onChange={this.Cascader_Select} value={address}/>*/}
-                            {/*</InputGroup>*/}
                         </Col>
                         <Col className="gutter-row" sm={8}>
                             <RangePicker style={{ width:'100%' }} onChange={this.RangePicker_Select} value={timeRange}/>
                         </Col>
                     </Row>
-                    {/*<Row gutter={16}>*/}
-                        {/*<div className='plus' onClick={this.CreateItem}>*/}
-                            {/*<Icon type="plus-circle" />*/}
-                        {/*</div>*/}
-                        {/*<div className='minus'>*/}
-                            {/*<Popconfirm title="确定要批量删除吗?" onConfirm={this.MinusClick}>*/}
-                                {/*<Icon type="minus-circle" />*/}
-                            {/*</Popconfirm>*/}
-                        {/*</div>*/}
-                        {/*<div className='question'>*/}
-                            {/*<Tooltip placement="right" title={questiontxt}>*/}
-                                {/*<Icon type="question-circle" />*/}
-                            {/*</Tooltip>*/}
-                        {/*</div>*/}
-                        {/*<div className='btnOpera'>*/}
-                            {/*<Button type="primary" onClick={this.btnSearch_Click} style={{marginRight:'10px'}}>查询</Button>*/}
-                            {/*<Button type="primary" onClick={this.btnClear_Click} style={{background:'#f8f8f8', color: '#108ee9'}}>重置</Button>*/}
-                        {/*</div>*/}
-                    {/*</Row>*/}
                     <FormTable
                         getImg={this.getImg}
                         authRequest={authRequest}
@@ -598,12 +497,8 @@ export default class UForm extends Component{
                         loading={loading}
                         pagination={pagination}
                     />
-                    {<SureMessageForm ref={this.saveFormRef} visible={visible} onCancel={this.handleCancel} onCreate={this.handleCreate}  title="确认信息" okText="提交"/>}
+                    {<SureMessageForm ref={this.saveFormRef} visible={visible} onCancel={this.handleCancel} onCreate={()=>this.handleCreate(uid,authType)}  title="确认信息" okText="提交"/>}
                     {<ProveImgForm  visible={imgVisible} onCancel={this.handleCancelImg}  imgSrc={imgSrc} name={name} companyname={companyname} title="证明图片" />}
-                    {/*{isUpdate?
-                        <CollectionCreateForm ref={this.saveFormRef} visible={visible} onCancel={this.handleCancel} onCreate={this.handleUpdate} title="修改信息" okText="更新"
-                    /> : <CollectionCreateForm ref={this.saveFormRef} visible={visible} onCancel={this.handleCancel} onCreate={this.handleCreate} title="新建信息" okText="创建"
-                    />}*/}
                 </div>
             </div>
         )

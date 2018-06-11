@@ -16,18 +16,23 @@ export default class FormTable extends Component{
 
     }
 
-    chooseAuth(){
-
+    selectRow = (record) => {
+        debugger;
+        const selectedRowKeys = [...this.state.selectedRowKeys];
+        if (selectedRowKeys.indexOf(record.key) >= 0) {
+            selectedRowKeys.splice(selectedRowKeys.indexOf(record.key), 1);
+        } else {
+            selectedRowKeys.push(record.key);
+        }
+        this.setState({ selectedRowKeys });
     }
-    authDiv(){
 
-    }
     render(){
         const { authRequest,passRequest,rejectRequest,checkChange,onResolve,onReject,getImg, onDelete, editClick,pagination, dataSource, loading } = this.props;
         const rowSelection = {
             onChange: checkChange,
             getCheckboxProps: record => ({
-                disabled: record.name === 'Disabled User', // Column configuration not to be checked
+                disabled: record.name === 'Disabled User',
             }),
         };
         var columns=[];
@@ -78,16 +83,15 @@ export default class FormTable extends Component{
                     className:'imgtd',
                     render:(text, record) =>
                         <div className='opera'>
-                            <span onClick={() => onDelete(record.key,record.auditstate)}>
-                                <Icon type="check" /> 通过
+                            <span onClick={() => onDelete(record.key,"pass")}>
+                                通过
                             </span><br />
-                            <span onClick={() => onDelete(record.key)}>
-                                <Icon type="close" /> 拒绝
+                            <span onClick={() => onDelete(record.key,"reject")}>
+                                拒绝
                             </span>
                         </div>
 
                 }]
-
         }else if(passRequest || rejectRequest){
             columns=[
                 {
@@ -128,7 +132,7 @@ export default class FormTable extends Component{
 
                     className:'imgtd',
                     render:(text, record) =>
-                        <Button type="primary" icon="search" size="small" onClick={() => getImg(record.key)}>查看图片</Button>
+                        <Button type="primary" size="small" onClick={() => getImg(record.key)}>查看图片</Button>
                 },{
                     title: '审核人',
                     dataIndex: 'auditman',
@@ -150,6 +154,11 @@ export default class FormTable extends Component{
                 loading={loading}
                 scroll={{ x: 1000 }}
                 pagination={pagination}
+                onRow={(record) => ({
+                    onClick: () => {
+                        this.selectRow(record);
+                    },
+                })}
             />
         )
     }
