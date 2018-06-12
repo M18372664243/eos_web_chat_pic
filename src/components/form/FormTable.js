@@ -83,12 +83,18 @@ export default class FormTable extends Component{
                     className:'imgtd',
                     render:(text, record) =>
                         <div className='opera'>
-                            <span onClick={() => onDelete(record.key,"pass")}>
-                                通过
-                            </span><br />
-                            <span onClick={() => onDelete(record.key,"reject")}>
-                                拒绝
-                            </span>
+                            <div style={{display:"flex",width:"100%"}}>
+                                <div style={{width:"50%"}}>
+                                    <Button type="default" onClick={() => onDelete(record.key,"pass")}>
+                                        通过
+                                    </Button>
+                                </div>
+                                <div style={{width:"50%"}}>
+                                    <Button type="default" onClick={() => onDelete(record.key,"reject")}>
+                                        拒绝
+                                    </Button>
+                                </div>
+                            </div>
                         </div>
 
                 }]

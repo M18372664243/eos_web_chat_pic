@@ -11,6 +11,7 @@ const options = [];
 class SureMessage extends Component{
     state = {
         autoCompleteResult: [],
+        passType:2
     };
     constructor(props){
         super(props);
@@ -51,9 +52,13 @@ class SureMessage extends Component{
         }
         this.setState({ autoCompleteResult });
     };*/
+    handleChange = (val) =>{
+        this.setState({
+            passType:val
+        })
+    }
     render(){
-        const { visible, onCancel, onCreate, form, okText, title } = this.props;
-        
+        const { visible, onCancel, onCreate, form, okText, title,authType} = this.props;
         const { getFieldDecorator } = form;
         const { autoCompleteResult } = this.state;
         const FormItemLayout = {
@@ -70,13 +75,31 @@ class SureMessage extends Component{
                 title={title}
                 okText={okText}
                 onCancel={onCancel}
-                onOk={onCreate}
+                onOk={()=>{onCreate(this.state.passType)}}
                 closable={false}
                 maskClosable={false}
                 keyboard={false}
                 destroyOnClose={false}
             >
                 <Form layout="horizontal">
+                    {/*{authType=="pass"?<FormItem label="认证等级" {...FormItemLayout} hasFeedback>*/}
+                        {/*{getFieldDecorator('value', {*/}
+                            {/*rules: [{ required: true, message: '请选择认证等级！' }],*/}
+                        {/*})(*/}
+                            {/*<Select defaultValue="个人认证" onChange={this.handleChange}>*/}
+                                {/*<Option value="1">企业认证</Option>*/}
+                                {/*<Option value="2">个人认证</Option>*/}
+                                {/*<Option value="3">大V认证</Option>*/}
+                            {/*</Select>*/}
+                        {/*)}</FormItem>:null}*/}
+                    {authType=="pass"?<FormItem label="认证等级" {...FormItemLayout} hasFeedback>
+                        <Select defaultValue="个人认证" onChange={this.handleChange}>
+                            <Option value="1">企业认证</Option>
+                            <Option value="2">个人认证</Option>
+                            <Option value="3">大V认证</Option>
+                        </Select></FormItem>
+                        :null}
+
                     <FormItem label="认证信息" {...FormItemLayout} hasFeedback>
                         {getFieldDecorator('name', {
                             rules: [{ required: true, message: '请输入认证信息！' }],

@@ -56,6 +56,9 @@ var authType;
 export default class UForm extends Component{
     constructor(props) {
         super(props);
+        if(localStorage.getItem("userName")==null){
+            this.props.history.push('/login');
+        }
         this.state = {
             total:0,
             size:10,
@@ -82,6 +85,7 @@ export default class UForm extends Component{
             auditstate:1,
             companyname:'',
             name:'',
+            authType:"",
         };
     }
 
@@ -89,31 +93,32 @@ export default class UForm extends Component{
         this.getData();
     }
 
-    getData = (type,offset) => {
+    getData = (type,offset,startTime,endTime,date) => {
         var params;
-        //const {timeRange,startime,endtime}=this.state;
 
         if(type ==undefined || type==null){
-            type=1
+            type=4
         }
-        params = "type="+type;
+        params = "?auditstatus="+type;
         if (offset ==undefined || offset == null){
             offset =0;
         }
-        if(startTime1==undefined || startTime1==null || startTime1=='' || endTime1==undefined || endTime1==null || endTime1==''){
-            params ="?"+params+"&offset="+offset;
-        }else{
-            params ="?"+params+"&offset="+offset+"&startime="+startTime1._i+"&endtime="+endTime1._i;
+        params =params+"&offset="+offset;
+        if(startTime!=undefined &&startTime !=''&&startTime !=null){
+            params =params+"&startTime="+startTime;
         }
-        debugger;
-        axios.get(config.baseUrl+"authentication/v1/getApplys"+params,{headers:{"Content-Type":'application/json'}}).then(function (response){
-            if(response.data.data.result>0){
-                var dataArr = response.data.data.userInfo;
+        if(endTime!=undefined &&endTime !=''&&endTime !=null){
+            params =params+"&endTime="+endTime;
+        }
+        axios.get(config.baseUrl+"authentication/v1/searchApply"+params,{headers:{"Content-Type":'application/json'}}).then(function (response){
+            if(response.data.code==200&&response.data.success){
+                var dataArr = response.data.data.auths;
+                var totalCount = response.data.data.totalCount;
                 var data =[];
                 for(var i =0;i <dataArr.length;i++){
                     var user ={}
                     user.key = dataArr[i].uid;
-                    user.committime=this.parseDate(dataArr[i].submitTime);
+                    user.committime=this.parseDate((dataArr[i].submitTime)*1000);
                     user.account = dataArr[i].uid;
                     user.name = dataArr[i].userInfoEntity.name;
                     if(dataArr[i].userInfoEntity.gender==0){
@@ -130,45 +135,83 @@ export default class UForm extends Component{
                     data.push(user);
                 }
                 if(type !=undefined || type !=null){
+                    if(type == 4){
+                        if(date!=undefined){
+                            this.setState({
+                                total:totalCount,
+                                dataSource: data,
+                                loading:false,
+                                authRequest:true,
+                                passRequest:false,
+                                rejectRequest:false,
+                                auditstate:type,
+                                timeRange:date
+                            })
+                        }else {
+                            this.setState({
+                                total:totalCount,
+                                dataSource: data,
+                                loading:false,
+                                authRequest:true,
+                                passRequest:false,
+                                rejectRequest:false,
+                                auditstate:type,
+                            })
+                        }
+
+                    }
                     if(type == 1){
-                        this.setState({
-                            total:data.length,
-                            dataSource: data,
-                            loading:false,
-                            authRequest:true,
-                            passRequest:false,
-                            rejectRequest:false,
-                            auditstate:1,
-                            timeRange:timeRange1
-                        })
+                        if(date!=undefined){
+                            this.setState({
+                                total:totalCount,
+                                dataSource: data,
+                                loading:false,
+                                authRequest:false,
+                                passRequest:true,
+                                rejectRequest:false,
+                                auditstate:type,
+                                timeRange:date
+                            })
+                        }else {
+                            this.setState({
+                                total:totalCount,
+                                dataSource: data,
+                                loading:false,
+                                authRequest:false,
+                                passRequest:true,
+                                rejectRequest:false,
+                                auditstate:type,
+                            })
+                        }
+
                     }
-                    if(type == 0){
-                        this.setState({
-                            total:data.length,
-                            dataSource: data,
-                            loading:false,
-                            authRequest:false,
-                            passRequest:true,
-                            rejectRequest:false,
-                            auditstate:0,
-                            timeRange:timeRange1
-                        })
-                    }
-                    if(type == 2){
-                        this.setState({
-                            total:data.length,
-                            dataSource: data,
-                            loading:false,
-                            authRequest:false,
-                            passRequest:false,
-                            rejectRequest:true,
-                            auditstate:2,
-                            timeRange:timeRange1
-                        })
+                    if(type == 5){
+                        if(date!=undefined){
+                            this.setState({
+                                total:totalCount,
+                                dataSource: data,
+                                loading:false,
+                                authRequest:false,
+                                passRequest:false,
+                                rejectRequest:true,
+                                auditstate:type,
+                                timeRange:date
+                            })
+                        }else {
+                            this.setState({
+                                total:totalCount,
+                                dataSource: data,
+                                loading:false,
+                                authRequest:false,
+                                passRequest:false,
+                                rejectRequest:true,
+                                auditstate:type
+                            })
+                        }
                     }
                 }else {
                     this.setState({
-                        total:data.length,
+                        total:totalCount,
                         dataSource: data,
                         loading:false
                     })
@@ -208,103 +251,18 @@ export default class UForm extends Component{
     // };
 
     onSearchUserState = (value,event) => {
-        //console.log(value.target.value);
-        //this.getData();
-        //const { dataSource } = this.state;
-       /* var arr=dataSourceAll.filter(function(item ){
-            return item.auditstate==value;
-        });
-        switch (event.target.textContent){
-            case '待审核请求':this.setState({
-                authRequest:true,
-                passRequest:false,
-                rejectRequest:false,
-                dataSource: arr,
-                loading: false,
-            });break;
-            case '已拒绝请求':this.setState({
-                authRequest:false,
-                passRequest:false,
-                rejectRequest:true,
-                dataSource: arr,
-                loading: false,
-            });break;
-            case '已通过请求':this.setState({
-                authRequest:false,
-                passRequest:true,
-                rejectRequest:false,
-                dataSource: arr,
-                loading: false,
-            });break;
-        }*/
-        /*var arr=dataSourceAll.filter(function(item ){
-            return item.auditstate==value.target.value;
-        });
-        switch (value.target.value){
-            case '-1':this.setState({
-                authRequest:true,
-                passRequest:false,
-                rejectRequest:false,
-                dataSource: arr,
-                loading: false,
-            });break;
-            case '0':this.setState({
-                authRequest:false,
-                passRequest:false,
-                rejectRequest:true,
-                dataSource: arr,
-                loading: false,
-            });break;
-            case '1':this.setState({
-                authRequest:false,
-                passRequest:true,
-                rejectRequest:false,
-                dataSource: arr,
-                loading: false,
-            });break;
-        }*/
         this.getData(value.target.value,undefined);
-        /*axios.get('/data')
-            .then(function (response) {
-                // console.log(response.data);
-
-                this.setState({
-                    dataSource:response.data
-                })
-                alert(imgSrc);
-            }.bind(this))
-            .catch(function (error) {
-                console.log(error);
-            })*/
     };
 
     RangePicker_Select = (date, dateString) => {
-        debugger;
         console.log(date, dateString);
         const { dataSource,auditstate} = this.state;
-        const startime = moment(dateString[0]);
-        const endtime = moment(dateString[1]);
-
-        if(date.length===0){
-            // this.setState({
-            //     timeRange: date,
-            //     dataSource: [],
-            //     startime:'',
-            //     endtime:'',
-            // });
-            //this.getData();
-        }else{
-
-            // this.setState({
-            //     //timeRange: date,
-            //     startime:startime,
-            //     endtime:endtime,
-            //
-            // });
+        const startime = dateString[0];
+        const endtime = dateString[1];
+        if(date.length>0){
             startTime1=startime;
             endTime1=endtime;
-            timeRange1=date;
-            this.getData(auditstate,0);
+            this.getData(auditstate,0,startime,endtime,date);
         }
 
     };
@@ -312,15 +270,9 @@ export default class UForm extends Component{
         this.form = form;
     };
     //提交认证信息
-    handleCreate = (uid,type) => {
+    handleCreate = (uid,type,passType) => {
         var auth;
         var that = this;
-        if(type =="pass"){
-            auth =0;
-        }
-        if(type =="reject"){
-            auth =2;
-        }
         const dataSource = [...this.state.dataSource];
         this.setState({ dataSource: dataSource.filter(item => item.key !== this.state.key)});
         const form = this.form;
@@ -331,8 +283,20 @@ export default class UForm extends Component{
             values.createtime = moment().format("YYYY-MM-DD hh:mm:ss");
             var coment = values.name;
             var name =localStorage.getItem("userName");
-            axios.get(config.baseUrl+"authentication/v1/updateApply?uid="+uid+"&type="+auth+"&coment="+coment+"&name="+name,{headers:{"Content-Type":"application/json"}}).then(function (res) {
-                that.getData()
+            var params ="?uid="+uid+"&name="+name;
+            if(type =="pass"){
+                params=params+"&type="+passType+"&coment="+coment;
+            }
+            if(type =="reject"){
+                auth =5;
+                params=params+"&type="+auth+"&rejectreason="+coment;
+            }
+            axios.get(config.baseUrl+"authentication/v1/updateApply"+params,{headers:{"Content-Type":"application/json"}}).then(function (res) {
+                if (res.data.code == 200 && res.data.success){
+                    that.getData(4,0)
+                }else {
+                    alert(res.data.msg);
+                }
             }).catch(function (err) {
                 console.log("err"+err);
             })
@@ -356,20 +320,6 @@ export default class UForm extends Component{
             imgSrc:'imgSrc',
             imgVisible:true
         })
-        /*axios.get('/data')
-            .then(function (response) {
-                // console.log(response.data);
-                imgSrc = response.data;
-                this.setState({
-                    name:name,
-                    companyname:companyname,
-                    imgSrc:'imgSrc',
-                    imgVisible:true
-                })
-            }.bind(this))
-            .catch(function (error) {
-                console.log(error);
-            })*/
     };
     //收回图片
     handleCancelImg=()=>{
@@ -380,16 +330,14 @@ export default class UForm extends Component{
         authType = type
         this.setState({
             visible: true,
+            authType:type,
         })
-        const dataSource = [...this.state.dataSource];
-        this.setState({ dataSource: dataSource.filter(item => item.key !== key) });
     };
     //审核通过
     onResolve = (key,auditstate) => {
         this.setState({
             visible: true,
             key:key,
-            // auditstate:auditstate,
         })
 
     };
@@ -462,25 +410,26 @@ export default class UForm extends Component{
     };
     getApplys =(type)=>{
         if("auth" == type){
-            this.getData(1,0)
+            this.getData(4,0)
         }
         if("pass" == type){
-            this.getData(0,0)
+            this.getData(1,0)
         }
         if("reject" == type){
-            this.getData(2,0)
+            this.getData(5,0)
         }
     }
 
 
     render(){
-        const {total, size,authRequest, passRequest,rejectRequest, address, timeRange, dataSource, visible, isUpdate, loading,imgSrc,name,companyname,imgVisible } = this.state;
+        const {total,authType, size,authRequest, passRequest,rejectRequest, address, timeRange, dataSource, visible, isUpdate, loading,imgSrc,name,companyname,imgVisible } = this.state;
         let pagination = {
             total: total,
             defaultCurrent: 1,
             pageSize: size,
             hideOnSinglePage:false,
             showSizeChanger: false,
+            style:{textAlign:"center",float:"none"},
             onChange:(current, pageSize) => {
                 this.pageChange(current, pageSize)
             },
@@ -500,29 +449,29 @@ export default class UForm extends Component{
                         <Col className="gutter-row" sm={8}>
                             <div style={{display:"flex"}}>
                                 {this.state.authRequest?
-                                    <div onClick={()=>{this.getApplys("auth")}} style={{backgroundColor:"#bfbfbf",lineHeight:"20px",fontSize:"12px",border:"1px solid #bfbfbf",height:24,width:94,padding:"0px 16px",fontWeight:500}}>
+                                    <div onClick={()=>{this.getApplys("auth")}} style={{backgroundColor:"#bfbfbf",lineHeight:"20px",fontSize:"12px",border:"1px solid #bfbfbf",height:24,minWidth:94,width:94,padding:"0px 16px",fontWeight:500}}>
                                         待审核请求
                                     </div>
                                     :
-                                    <div onClick={()=>{this.getApplys("auth")}} style={{lineHeight:"20px",fontSize:"12px",border:"1px solid #ddd",height:24,width:94,padding:"0px 16px",fontWeight:500}}>
+                                    <div onClick={()=>{this.getApplys("auth")}} style={{lineHeight:"20px",fontSize:"12px",border:"1px solid #ddd",height:24,minWidth:94,width:94,padding:"0px 16px",fontWeight:500}}>
                                         待审核请求
                                     </div>
                                 }
                                 {this.state.passRequest?
-                                    <div onClick={()=>{this.getApplys("pass")}} style={{backgroundColor:"#bfbfbf",lineHeight:"20px",fontSize:"12px",border:"1px solid #bfbfbf",height:24,width:94,padding:"0px 16px",fontWeight:500}}>
+                                    <div onClick={()=>{this.getApplys("pass")}} style={{backgroundColor:"#bfbfbf",lineHeight:"20px",fontSize:"12px",border:"1px solid #bfbfbf",height:24,minWidth:94,width:94,padding:"0px 16px",fontWeight:500}}>
                                         已通过请求
                                     </div>
                                     :
-                                    <div onClick={()=>{this.getApplys("pass")}} style={{lineHeight:"20px",fontSize:"12px",border:"1px solid #ddd",height:24,width:94,padding:"0px 16px",fontWeight:500}}>
+                                    <div onClick={()=>{this.getApplys("pass")}} style={{lineHeight:"20px",fontSize:"12px",border:"1px solid #ddd",height:24,minWidth:94,width:94,padding:"0px 16px",fontWeight:500}}>
                                         已通过请求
                                     </div>
                                 }
                                 {this.state.rejectRequest?
-                                    <div onClick={()=>{this.getApplys("reject")}} style={{backgroundColor:"#bfbfbf",lineHeight:"20px",fontSize:"12px",border:"1px solid #bfbfbf",height:24,width:94,padding:"0px 16px",fontWeight:500}}>
+                                    <div onClick={()=>{this.getApplys("reject")}} style={{backgroundColor:"#bfbfbf",lineHeight:"20px",fontSize:"12px",border:"1px solid #bfbfbf",height:24,minWidth:94,width:94,padding:"0px 16px",fontWeight:500}}>
                                         已拒绝请求
                                     </div>
                                     :
-                                    <div onClick={()=>{this.getApplys("reject")}} style={{lineHeight:"20px",fontSize:"12px",border:"1px solid #ddd",height:24,width:94,padding:"0px 16px",fontWeight:500}}>
+                                    <div onClick={()=>{this.getApplys("reject")}} style={{lineHeight:"20px",fontSize:"12px",border:"1px solid #ddd",height:24,minWidth:94,width:94,padding:"0px 16px",fontWeight:500}}>
                                         已拒绝请求
                                     </div>
                                 }
@@ -548,7 +497,7 @@ export default class UForm extends Component{
                         loading={loading}
                         pagination={pagination}
                     />
-                    {<SureMessageForm ref={this.saveFormRef} visible={visible} onCancel={this.handleCancel} onCreate={()=>this.handleCreate(uid,authType)}  title="确认信息" okText="提交"/>}
+                    {<SureMessageForm authType={authType} ref={this.saveFormRef} visible={visible} onCancel={this.handleCancel} onCreate={(passType)=>this.handleCreate(uid,authType,passType)}  title="确认信息" okText="提交"/>}
                     {<ProveImgForm  visible={imgVisible} onCancel={this.handleCancelImg}  imgSrc={imgSrc} name={name} companyname={companyname} title="证明图片" />}
                 </div>
             </div>
