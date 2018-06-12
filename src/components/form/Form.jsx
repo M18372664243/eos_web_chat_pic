@@ -479,7 +479,7 @@ export default class UForm extends Component{
             total: total,
             defaultCurrent: 1,
             pageSize: size,
-            hideOnSinglePage:true,
+            hideOnSinglePage:false,
             showSizeChanger: false,
             onChange:(current, pageSize) => {
                 this.pageChange(current, pageSize)
