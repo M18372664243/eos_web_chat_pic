@@ -21,6 +21,9 @@ var RadioButton = Radio.Button;
 var RadioGroup = Radio.Group;
 var dataSourceAll = []
 var imgSrc=''
+var startTime1=''
+var endTime1=''
+var timeRange1=undefined
 //数组中是否包含某项
 function isContains(arr, item){
     arr.map(function (ar) {
@@ -59,6 +62,8 @@ export default class UForm extends Component{
             userName: '',
             address: '',
             timeRange: '',
+            startime:'',
+            endtime:'',
             visible: false, //新建窗口隐藏
             dataSource: [],
             count: data.length,
@@ -86,6 +91,8 @@ export default class UForm extends Component{
 
     getData = (type,offset) => {
         var params;
+        //const {timeRange,startime,endtime}=this.state;
+
         if(type ==undefined || type==null){
             type=1
         }
@@ -93,7 +100,12 @@ export default class UForm extends Component{
         if (offset ==undefined || offset == null){
             offset =0;
         }
-        params ="?"+params+"&offset="+offset;
+        if(startTime1==undefined || startTime1==null || startTime1=='' || endTime1==undefined || endTime1==null || endTime1==''){
+            params ="?"+params+"&offset="+offset;
+        }else{
+            params ="?"+params+"&offset="+offset+"&startime="+startTime1._i+"&endtime="+endTime1._i;
+        }
+        debugger;
         axios.get(config.baseUrl+"authentication/v1/getApplys"+params,{headers:{"Content-Type":'application/json'}}).then(function (response){
             if(response.data.data.result>0){
                 var dataArr = response.data.data.userInfo;
@@ -125,7 +137,9 @@ export default class UForm extends Component{
                             loading:false,
                             authRequest:true,
                             passRequest:false,
-                            rejectRequest:false
+                            rejectRequest:false,
+                            auditstate:1,
+                            timeRange:timeRange1
                         })
                     }
                     if(type == 0){
@@ -135,7 +149,9 @@ export default class UForm extends Component{
                             loading:false,
                             authRequest:false,
                             passRequest:true,
-                            rejectRequest:false
+                            rejectRequest:false,
+                            auditstate:0,
+                            timeRange:timeRange1
                         })
                     }
                     if(type == 2){
@@ -145,7 +161,9 @@ export default class UForm extends Component{
                             loading:false,
                             authRequest:false,
                             passRequest:false,
-                            rejectRequest:true
+                            rejectRequest:true,
+                            auditstate:2,
+                            timeRange:timeRange1
                         })
                     }
                 }else {
@@ -261,23 +279,33 @@ export default class UForm extends Component{
     };
 
     RangePicker_Select = (date, dateString) => {
-        // console.log(date, dateString);
-        const { dataSource } = this.state;
+        debugger;
+        console.log(date, dateString);
+        const { dataSource,auditstate} = this.state;
         const startime = moment(dateString[0]);
         const endtime = moment(dateString[1]);
 
-        // if(date.length===0){
-        //     this.setState({
-        //         timeRange: date,
-        //         dataSource: [],
-        //     });
-        //     this.getData();
-        // }else{
-        //     this.setState({
-        //         timeRange: date,
-        //         dataSource: dataSource.filter(item => (moment(item.createtime.substring(0,10)) <= endtime  && moment(item.createtime.substring(0,10)) >= startime) === true)
-        //     });
-        // }
+        if(date.length===0){
+            // this.setState({
+            //     timeRange: date,
+            //     dataSource: [],
+            //     startime:'',
+            //     endtime:'',
+            // });
+            //this.getData();
+        }else{
+
+            // this.setState({
+            //     //timeRange: date,
+            //     startime:startime,
+            //     endtime:endtime,
+            //
+            // });
+            startTime1=startime;
+            endTime1=endtime;
+            timeRange1=date;
+            this.getData(auditstate,0);
+        }
 
     };
     saveFormRef = (form) => {
@@ -320,6 +348,29 @@ export default class UForm extends Component{
         this.setState({ visible: false });
         form.resetFields();
     };
+    //查看图片
+    getImg = (value,name,companyname) => {
+        this.setState({
+            name:name,
+            companyname:companyname,
+            imgSrc:'imgSrc',
+            imgVisible:true
+        })
+        /*axios.get('/data')
+            .then(function (response) {
+                // console.log(response.data);
+                imgSrc = response.data;
+                this.setState({
+                    name:name,
+                    companyname:companyname,
+                    imgSrc:'imgSrc',
+                    imgVisible:true
+                })
+            }.bind(this))
+            .catch(function (error) {
+                console.log(error);
+            })*/
+    };
     //收回图片
     handleCancelImg=()=>{
         this.setState({ imgVisible: false });
@@ -338,7 +389,7 @@ export default class UForm extends Component{
         this.setState({
             visible: true,
             key:key,
-            auditstate:auditstate,
+            // auditstate:auditstate,
         })
 
     };
