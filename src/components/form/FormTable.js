@@ -17,7 +17,6 @@ export default class FormTable extends Component{
     }
 
     selectRow = (record) => {
-        debugger;
         const selectedRowKeys = [...this.state.selectedRowKeys];
         if (selectedRowKeys.indexOf(record.key) >= 0) {
             selectedRowKeys.splice(selectedRowKeys.indexOf(record.key), 1);

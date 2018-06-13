@@ -3,7 +3,7 @@ import { Modal, Form, Input, Radio, InputNumber, Cascader, Select, AutoComplete 
 import axios from 'axios';
 import address from './request/address';
 import  testimg from './宁话首图.png'
-
+import './Modal.less';
 const FormItem = Form.Item;
 const Option = Select.Option;
 const AutoCompleteOption = AutoComplete.Option;
@@ -32,7 +32,7 @@ class ProveImg extends Component{
         return (
             <Modal
                 visible={visible}
-                title={name+'的'+title}
+                // title={name+'的'+title}
                 /*okText={okText}*/
                 onCancel={onCancel}
                 /*onOk={onCreate}*/
@@ -44,6 +44,7 @@ class ProveImg extends Component{
                 width={900}
                 imgSrc={imgSrc}
                 bodyStyle={{padding:'0px',lineHeight: '1px' }}
+                wrapClassName ={'web'}
             >
                 <img src={testimg} width={'100%'}  style={{height:'100%'}}/>
             </Modal>

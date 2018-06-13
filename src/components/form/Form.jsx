@@ -410,12 +410,21 @@ export default class UForm extends Component{
     };
     getApplys =(type)=>{
         if("auth" == type){
+            this.setState({
+                timeRange:''
+            })
             this.getData(4,0)
         }
         if("pass" == type){
+            this.setState({
+                timeRange:''
+            })
             this.getData(1,0)
         }
         if("reject" == type){
+            this.setState({
+                timeRange:''
+            })
             this.getData(5,0)
         }
     }
