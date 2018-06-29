@@ -428,7 +428,10 @@ export default class UForm extends Component{
             this.getData(5,0)
         }
     }
-
+    loginOut = () =>{
+        localStorage.removeItem("userName");
+        this.props.history.push('/eos_web_manage');
+    }
 
     render(){
         const {total,authType, size,authRequest, passRequest,rejectRequest, address, timeRange, dataSource, visible, isUpdate, loading,imgSrc,name,companyname,imgVisible } = this.state;
@@ -454,6 +457,14 @@ export default class UForm extends Component{
         return(
             <div>
                 <div className='formBody'>
+                    <Row gutter={24}>
+                        <Col className="gutter-row" sm={24}>
+                            <div style={{float:"right"}}>
+                                {/*<span>欢迎<span style={{color:'#108ee9'}}>{localStorage.getItem("userName")}</span>,</span>*/}
+                                <a onClick={this.loginOut}>退出登陆</a>
+                            </div>
+                        </Col>
+                    </Row>
                     <Row gutter={24}>
                         <Col className="gutter-row" sm={8}>
                             <div style={{display:"flex"}}>

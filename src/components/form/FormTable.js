@@ -54,11 +54,11 @@ export default class FormTable extends Component{
                 }, {
                     title: '性别',
                     dataIndex: 'sex',
-                    filters: [
-                        { text: '男', value: '男' },
-                        { text: '女', value: '女' },
-                    ],
-                    onFilter: (value, record) => record.sex.indexOf(value) === 0,
+                    // filters: [
+                    //     { text: '男', value: '男' },
+                    //     { text: '女', value: '女' },
+                    // ],
+                    // onFilter: (value, record) => record.sex.indexOf(value) === 0,
                     width: 70,
                 }, {
                     title: '公司名',
@@ -116,11 +116,11 @@ export default class FormTable extends Component{
                 }, {
                     title: '性别',
                     dataIndex: 'sex',
-                    filters: [
-                        { text: '男', value: '男' },
-                        { text: '女', value: '女' },
-                    ],
-                    onFilter: (value, record) => record.sex.indexOf(value) === 0,
+                    // filters: [
+                    //     { text: '男', value: '男' },
+                    //     { text: '女', value: '女' },
+                    // ],
+                    // onFilter: (value, record) => record.sex.indexOf(value) === 0,
                     width: 70,
                 }, {
                     title: '公司名',
