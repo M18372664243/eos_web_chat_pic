@@ -13,9 +13,9 @@ class MRoute extends Component {
     return (
       <Router history={history}>
         <Switch>
-          <Route exact path="/" component={Home}/>
-          <Route exact path="/app/form" component={Form}/>
-          <Route path="/login" component={Login}/>
+          <Route exact path="/eos_web_manage" component={Home}/>
+          <Route exact path="/eos_web_manage/form" component={Form}/>
+          <Route path="/eos_web_manage/login" component={Login}/>
           <Route component={NoMatch}/>
         </Switch>
       </Router>

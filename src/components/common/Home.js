@@ -10,8 +10,8 @@ export default class Home extends Component{
     render(){
         return(
             localStorage.getItem("userName")===null?
-            <Redirect to="/login"/>:
-            <Redirect to="/app/form"/>
+            <Redirect to="/eos_web_manage/login"/>:
+            <Redirect to="/eos_web_manage/form"/>
         )
     }
 }

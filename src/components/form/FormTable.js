@@ -74,7 +74,7 @@ export default class FormTable extends Component{
                     width: 80,
                     className:'imgtd',
                     render:(text, record) =>
-                        <Button type="primary" onClick={() => getImg(record.key,record.name,record.companyname)}>查看图片</Button>
+                        <Button type="primary" onClick={() => getImg(record.key,record.name,record.companyname,record.provimg)}>查看图片</Button>
                 },{
                     title: '审核操作',
                     dataIndex: 'opera',

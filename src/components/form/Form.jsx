@@ -57,7 +57,7 @@ export default class UForm extends Component{
     constructor(props) {
         super(props);
         if(localStorage.getItem("userName")==null){
-            this.props.history.push('/login');
+            this.props.history.push('/eos_web_manage');
         }
         this.state = {
             total:0,
@@ -313,11 +313,11 @@ export default class UForm extends Component{
         form.resetFields();
     };
     //查看图片
-    getImg = (value,name,companyname) => {
+    getImg = (value,name,companyname,provImg) => {
         this.setState({
             name:name,
             companyname:companyname,
-            imgSrc:'imgSrc',
+            imgSrc:provImg,
             imgVisible:true
         })
     };
