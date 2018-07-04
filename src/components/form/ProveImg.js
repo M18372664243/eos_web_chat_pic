@@ -46,7 +46,7 @@ class ProveImg extends Component{
                 bodyStyle={{padding:'0px',lineHeight: '1px' }}
                 wrapClassName ={'web'}
             >
-                <img src={imgSrc} width={'100%'}  style={{height:'100%'}}/>
+                <img src={imgSrc} width={'100%'}  style={{height:'500px',backgrpundSize:"100% 100%"}}/>
             </Modal>
         );
     }

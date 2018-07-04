@@ -20,7 +20,6 @@ const { RangePicker } = DatePicker;
 var RadioButton = Radio.Button;
 var RadioGroup = Radio.Group;
 var dataSourceAll = []
-var imgSrc=''
 var startTime1=''
 var endTime1=''
 var timeRange1=undefined
@@ -129,7 +128,7 @@ export default class UForm extends Component{
                     }
                     user.companyname =dataArr[i].userInfoEntity.company;
                     user.position=dataArr[i].userInfoEntity.major;
-                    user.provimg=dataArr[i].pic;
+                    user.provimg="https://sf.athena.pub/"+dataArr[i].pic;
                     user.auditman=dataArr[i].auditor;
                     user.audittime=this.parseDate(dataArr[i].auditTime);
                     data.push(user);

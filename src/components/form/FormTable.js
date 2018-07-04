@@ -137,7 +137,7 @@ export default class FormTable extends Component{
 
                     className:'imgtd',
                     render:(text, record) =>
-                        <Button type="primary" size="small" onClick={() => getImg(record.key)}>查看图片</Button>
+                        <Button type="primary" onClick={() => getImg(record.key,record.name,record.companyname,record.provimg)}>查看图片</Button>
                 },{
                     title: '审核人',
                     dataIndex: 'auditman',
