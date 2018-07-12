@@ -6,6 +6,7 @@ import { Row, Col, Button} from 'antd';
 import FormTable from './FormTable';
 import config from '../config/config';
 import './button.css'
+import SureMessageForm from './SureMessage'
 export default class UForm extends Component{
     constructor(props) {
         super(props);
@@ -16,13 +17,19 @@ export default class UForm extends Component{
             auth:true,
             total:0,
             size:10,
-            dataSource:[]
+            dataSource:[],
+            visible:false,
+            loading:false,
+            data:{},
+            selectedRowKeys: [],
+            currentPage:1
         };
     }
     componentDidMount(){
         this.getData(0);
     }
 
+    //未通过列表
     getData = (offset) => {
         var param
         if(offset==undefined){
@@ -47,7 +54,8 @@ export default class UForm extends Component{
                 }
                 this.setState({
                     dataSource:data,
-                    total:totalCount
+                    total:totalCount,
+                    loading:false
                 })
             }else {
                 alert(response.data.msg);
@@ -56,6 +64,8 @@ export default class UForm extends Component{
             console.log("err:"+err)
         })
     };
+
+    //转换时间
     parseDate = (timeStamp) =>{
         var date= new Date(timeStamp)
         var year =date.getFullYear()+ '-';
@@ -63,6 +73,8 @@ export default class UForm extends Component{
         var day = date.getDate() + ' ';
         return year+month+day;
     }
+
+    //通过列表
     getPassTag =(offset) =>{
         var param
         if(offset==undefined){
@@ -87,7 +99,8 @@ export default class UForm extends Component{
                 }
                 this.setState({
                     dataSource:data,
-                    total:totalCount
+                    total:totalCount,
+                    loading:false
                 })
             }else {
                 alert(response.data.msg);
@@ -97,36 +110,66 @@ export default class UForm extends Component{
         })
     }
 
+
+    getApplys =(type)=>{
+        this.setState({
+            loading:true,
+            currentPage:1
+        })
+        if("auth" == type){
+            this.setState({
+                auth:true,
+            })
+            this.getData(0)
+        }
+        if("pass" == type){
+            this.setState({
+                auth:false,
+            })
+            this.getPassTag(0)
+        }
+    }
+
+    //审核操作
+    onPass = (key,company,position,tagTimes,name) =>{
+        var data ={}
+        data.key = key
+        data.company =company,
+        data.position =position
+        data.tagTimes =tagTimes
+        data.name = name
+        this.setState({
+            visible:true,
+            data:data
+        })
+    }
+
+    saveFormRef = (form) => {
+        this.form = form;
+    };
     //提交认证信息
-    handleCreate = (uid,type,passType) => {
-        var auth;
+    handleCreate = (passType) => {
         var that = this;
-        const dataSource = [...this.state.dataSource];
-        this.setState({ dataSource: dataSource.filter(item => item.key !== this.state.key)});
         const form = this.form;
         form.validateFields((err, values) => {
             if (err) {
                 return;
             }
             values.createtime = moment().format("YYYY-MM-DD hh:mm:ss");
-            var coment = values.name;
-            var name =localStorage.getItem("userName");
-            var params ="?uid="+uid+"&name="+name;
-            if(type =="pass"){
-                params=params+"&type="+passType+"&coment="+coment;
-            }
-            if(type =="reject"){
-                auth =5;
-                params=params+"&type="+auth+"&rejectreason="+coment;
-            }
-            axios.get(config.baseUrl+"authentication/v1/updateApply"+params,{headers:{"Content-Type":"application/json"}}).then(function (res) {
-                if (res.data.code == 200 && res.data.success){
-                    that.getData(4,0)
+            var approver_id = 1
+            var auditStatus = passType
+            var approver_name ="admin"
+            var tagData = that.state.data
+            var params = "uid="+tagData.key+"&company="+tagData.company+"&postion="+tagData.position+"&approver_id="+approver_id+"&approver_name="+approver_name+"&times="+tagData.tagTimes+"&name="+tagData.name+"&auditStatus="+auditStatus
+            axios.get(config.baseUrl+"usertagweb/v1/approveUser?"+params,{headers:{"Content-Type":'application/json'}}).then(function (response){
+                if(response.data.code==200&&response.data.success){
+                    alert("审核成功")
+                    that.getData(0)
                 }else {
-                    alert(res.data.msg);
+                    alert(response.data.msg);
                 }
-            }).catch(function (err) {
-                console.log("err"+err);
+            }).catch(function (error) {
+                console.log(error)
             })
             form.resetFields();
             this.setState({
@@ -134,55 +177,41 @@ export default class UForm extends Component{
             });
         });
     };
+    //取消认证信息
+    handleCancel = () => {
+        const form=this.form;
+        this.setState({ visible: false });
+        form.resetFields();
+    };
 
+    checkChange = (selectedRowKeys) => {
+        this.setState({selectedRowKeys: selectedRowKeys});
+    };
     pageChange=(current, pageSize)=>{
         var offset = (current-1)*10
+        var that = this
+        this.setState({
+            loading:true,
+            currentPage:current
+        })
         if(this.state.auth){
-            this.getData(offset)
+           that.getData(offset)
         }else {
-            this.getPassTag(offset)
+           that.getPassTag(offset)
         }
 
     };
-    getApplys =(type)=>{
-        if("auth" == type){
-            this.setState({
-                auth:true
-            })
-            this.getData(0)
-        }
-        if("pass" == type){
-            this.setState({
-                auth:false
-            })
-            this.getPassTag(0)
-        }
 
-    }
-    onPass = (key,company,position,tagTimes,name) =>{
-        var that = this
-        var approver_id = 1
-        var approver_name ="admin"
-        var params = "uid="+key+"&company="+company+"&postion="+position+"&approver_id="+approver_id+"&approver_name="+approver_name+"&times="+tagTimes+"&name="+name
-        axios.get(config.baseUrl+"usertagweb/v1/approveUser?"+params,{headers:{"Content-Type":'application/json'}}).then(function (response){
-            if(response.data.code==200&&response.data.success){
-                alert("审核成功")
-                that.getData(0)
-            }else {
-                alert(response.data.msg);
-            }
-        }).catch(function (error) {
-            console.log(error)
-        })
-    }
+
     loginOut = () =>{
         localStorage.removeItem("userName");
         this.props.history.push('/eos_tag_web');
     }
     render(){
-        const {total,auth, size, dataSource, loading } = this.state;
+        const {total,auth,visible, size, dataSource, loading,data,currentPage} = this.state;
         let pagination = {
             total: total,
+            current:currentPage,
             defaultCurrent: 1,
             pageSize: size,
             hideOnSinglePage:false,
@@ -205,7 +234,7 @@ export default class UForm extends Component{
                     </Row>
                     <Row gutter={24}>
                         <Col className="gutter-row" sm={8}>
-                            {this.state.auth?
+                            {auth?
                             <div style={{display:"flex"}}>
                                     <Button  onClick={()=>{this.getApplys("auth")}} style={{background:"#bfbfbf"}}>
                                         待审核
@@ -233,6 +262,7 @@ export default class UForm extends Component{
                         loading={loading}
                         pagination={pagination}
                     />
+                    {<SureMessageForm ref={this.saveFormRef} postData={data} visible={visible} onCancel={this.handleCancel} onCreate={this.handleCreate}  title="确认信息" okText="提交"/>}
                 </div>
             </div>
         )
