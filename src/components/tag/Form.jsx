@@ -46,7 +46,8 @@ export default class UForm extends Component{
                     data.push(user);
                 }
                 this.setState({
-                    dataSource:data
+                    dataSource:data,
+                    total:totalCount
                 })
             }else {
                 alert(response.data.msg);
@@ -85,7 +86,8 @@ export default class UForm extends Component{
                     data.push(user);
                 }
                 this.setState({
-                    dataSource:data
+                    dataSource:data,
+                    total:totalCount
                 })
             }else {
                 alert(response.data.msg);
@@ -135,7 +137,12 @@ export default class UForm extends Component{
 
     pageChange=(current, pageSize)=>{
         var offset = (current-1)*10
-        this.getData(offset)
+        if(this.state.auth){
+            this.getData(offset)
+        }else {
+            this.getPassTag(offset)
+        }
+
     };
     getApplys =(type)=>{
         if("auth" == type){
