@@ -7,6 +7,7 @@ import FormTable from './FormTable';
 import config from '../config/config';
 import './button.css'
 import SureMessageForm from './SureMessage'
+import qs from 'qs'
 export default class UForm extends Component{
     constructor(props) {
         super(props);
@@ -19,10 +20,11 @@ export default class UForm extends Component{
             size:10,
             dataSource:[],
             visible:false,
-            loading:false,
+            loading:true,
             data:{},
             selectedRowKeys: [],
-            currentPage:1
+            currentPage:1,
+            showDetail:false,
         };
     }
     componentDidMount(){
@@ -48,14 +50,15 @@ export default class UForm extends Component{
                     user.name = dataArr[i].tagged_name;
                     user.company = dataArr[i].company
                     user.position = dataArr[i].position
-                    user.CompanyAndPosition =dataArr[i].company+dataArr[0].position;
+                    user.CompanyAndPosition =dataArr[i].company+dataArr[i].position;
                     user.tagTimes =dataArr[i].tagTimes
                     data.push(user);
                 }
                 this.setState({
                     dataSource:data,
                     total:totalCount,
-                    loading:false
+                    loading:false,
+                    showDetail:false,
                 })
             }else {
                 alert(response.data.msg);
@@ -94,13 +97,28 @@ export default class UForm extends Component{
                     user.name = dataArr[i].name;
                     user.company = dataArr[i].company
                     user.position = dataArr[i].position
-                    user.CompanyAndPosition =dataArr[i].company+dataArr[0].position;
+                    user.CompanyAndPosition =dataArr[i].company+dataArr[i].position;
+                    if(dataArr[i].tag == 0){
+                        user.tag ="无"
+                    }
+                    if(dataArr[i].tag == 1){
+                        user.tag ="交易所"
+                    }
+                    if(dataArr[i].tag == 2){
+                        user.tag ="媒体"
+                    }
+                    if(dataArr[i].tag == 3){
+                        user.tag ="项目方"
+                    }
+                    if(dataArr[i].tag == 4){
+                        user.tag ="投资方"
+                    }
                     data.push(user);
                 }
                 this.setState({
                     dataSource:data,
                     total:totalCount,
-                    loading:false
+                    loading:false,
                 })
             }else {
                 alert(response.data.msg);
@@ -130,14 +148,60 @@ export default class UForm extends Component{
         }
     }
 
+
+    detailTagList = (key) =>{
+        var that =this
+        var param = "?uid="+key
+        axios.get(config.baseUrl+"usertag/v1/getUserTags"+param,{headers:{"Content-Type":'application/json'}}).then(function (response){
+            if(response.data.code==200&&response.data.success){
+                var dataArr = response.data.data.tags;
+                var totalCount = response.data.data.tags.length;
+                var data =[];
+                for(var i =0;i <dataArr.length;i++){
+                    var user ={}
+                    user.key =i;
+                    user.uid = dataArr[i].uid;
+                    user.name = dataArr[i].tagged_name;
+                    user.company = dataArr[i].company
+                    user.position = dataArr[i].position
+                    user.CompanyAndPosition =dataArr[i].company+dataArr[i].position;
+                    user.tagTimes =dataArr[i].tagTimes
+                    user.tag = dataArr[i].tag;
+                    data.push(user);
+                }
+                that.setState({
+                    dataSource:data,
+                    total:totalCount,
+                    loading:false
+                })
+            }else {
+                alert(response.data.msg);
+            }
+        }).catch(function (err) {
+            console.log(err)
+        })
+    }
+    //查看详情
+    detailTag = (key) =>{
+        this.setState({
+            loading:true,
+            showDetail:true,
+        })
+        this.detailTagList(key);
+
+    }
+
     //审核操作
-    onPass = (key,company,position,tagTimes,name) =>{
+    onPass = (key,company,position,tagTimes,name,tag) =>{
         var data ={}
         data.key = key
         data.company =company,
         data.position =position
         data.tagTimes =tagTimes
         data.name = name
+        data.tag = tag
+        const form=this.form;
+        form.resetFields();
         this.setState({
             visible:true,
             data:data
@@ -148,7 +212,7 @@ export default class UForm extends Component{
         this.form = form;
     };
     //提交认证信息
-    handleCreate = (passType) => {
+    handleCreate = (passType,tagType) => {
         var that = this;
         const form = this.form;
         form.validateFields((err, values) => {
@@ -156,12 +220,22 @@ export default class UForm extends Component{
                 return;
             }
             values.createtime = moment().format("YYYY-MM-DD hh:mm:ss");
-            var approver_id = 1
-            var auditStatus = passType
-            var approver_name ="admin"
+            //var approver_id =1
+            //var approver_name="admin"
+            //var auditStatus =passType
             var tagData = that.state.data
-            var params = "uid="+tagData.key+"&company="+tagData.company+"&postion="+tagData.position+"&approver_id="+approver_id+"&approver_name="+approver_name+"&times="+tagData.tagTimes+"&name="+tagData.name+"&auditStatus="+auditStatus
-            axios.get(config.baseUrl+"usertagweb/v1/approveUser?"+params,{headers:{"Content-Type":'application/json'}}).then(function (response){
+            //var params = "uid="+tagData.key+"&company="+tagData.company+"&postion="+tagData.position+"&approver_id="+approver_id+"&approver_name="+approver_name+"&times="+tagData.tagTimes+"&name="+tagData.name+"&auditStatus="+auditStatus
+            var params = {}
+            params.uid = tagData.key
+            params.company = tagData.company
+            params.position =tagData.position
+            params.approver_id =1
+            params.approver_name = "admin"
+            params.times = tagData.tagTimes
+            params.name = tagData.name
+            params.auditStatus = passType
+            params.tag = tagType;
+            axios.post(config.baseUrl+"usertagweb/v1/approveUser",qs.stringify(params),{headers:{"Content-Type":'application/x-www-form-urlencoded'}}).then(function (response){
                 if(response.data.code==200&&response.data.success){
                     alert("审核成功")
                     that.getData(0)
@@ -174,14 +248,18 @@ export default class UForm extends Component{
             form.resetFields();
             this.setState({
                 visible: false,
+                currentPage:1
             });
         });
     };
     //取消认证信息
     handleCancel = () => {
         const form=this.form;
-        this.setState({ visible: false });
+        this.setState({
+            visible: false
+        });
         form.resetFields();
+
     };
 
     checkChange = (selectedRowKeys) => {
@@ -202,13 +280,20 @@ export default class UForm extends Component{
 
     };
 
+    backHome = () =>{
+        this.setState({
+            loading:true,
+            currentPage:1
+        })
+        this.getData(0)
+    }
 
     loginOut = () =>{
         localStorage.removeItem("userName");
         this.props.history.push('/eos_tag_web');
     }
     render(){
-        const {total,auth,visible, size, dataSource, loading,data,currentPage} = this.state;
+        const {total,auth,visible, size, dataSource, loading,data,currentPage,showDetail} = this.state;
         let pagination = {
             total: total,
             current:currentPage,
@@ -226,43 +311,54 @@ export default class UForm extends Component{
                 <div className='formBody'>
                     <Row gutter={24}>
                         <Col className="gutter-row" sm={24}>
-                            <div style={{float:"right"}}>
-                                {/*<span>欢迎<span style={{color:'#108ee9'}}>{localStorage.getItem("userName")}</span>,</span>*/}
+                            <div style={{float:"right",display:"flex"}}>
+                                {showDetail?<div style={{padding:'0 5px'}}>
+                                        <a onClick={this.backHome}>返回首页</a>
+                                    </div>:null
+                                }
+                                <div style={{padding:'0 5px'}}>
                                 <a onClick={this.loginOut}>退出登陆</a>
+                                </div>
                             </div>
                         </Col>
                     </Row>
-                    <Row gutter={24}>
-                        <Col className="gutter-row" sm={8}>
-                            {auth?
-                            <div style={{display:"flex"}}>
-                                    <Button  onClick={()=>{this.getApplys("auth")}} style={{background:"#bfbfbf"}}>
-                                        待审核
-                                    </Button>
-                                    <Button  onClick={()=>{this.getApplys("pass")}}>
-                                        已通过
-                                    </Button></div>
+                    {!showDetail?
+                        <Row gutter={24}>
+                            <Col className="gutter-row" sm={8}>
+                                {auth?
+                                    <div style={{display:"flex"}}>
+                                        <Button  onClick={()=>{this.getApplys("auth")}} style={{background:"#bfbfbf"}}>
+                                            待审核
+                                        </Button>
+                                        <Button  onClick={()=>{this.getApplys("pass")}}>
+                                            已通过
+                                        </Button></div>
                                     :
-                                <div style={{display:"flex"}}>
-                                    <Button  onClick={()=>{this.getApplys("auth")}} >
-                                        待审核
-                                    </Button>
-                                    <Button  onClick={()=>{this.getApplys("pass")}} style={{background:"#bfbfbf"}}>
-                                        已通过
-                                    </Button>
-                                </div>
-                            }
-                        </Col>
-                    </Row>
+                                    <div style={{display:"flex"}}>
+                                        <Button  onClick={()=>{this.getApplys("auth")}} >
+                                            待审核
+                                        </Button>
+                                        <Button  onClick={()=>{this.getApplys("pass")}} style={{background:"#bfbfbf"}}>
+                                            已通过
+                                        </Button>
+                                    </div>
+                                }
+                            </Col>
+                        </Row>
+                        :null
+                    }
+                    
                     <FormTable
                         dataSource={dataSource}
+                        showDetail ={showDetail}
                         auth={auth}
                         onPass={this.onPass}
+                        detailTag={this.detailTag}
                         editClick={this.editClick}
                         loading={loading}
                         pagination={pagination}
                     />
-                    {<SureMessageForm ref={this.saveFormRef} postData={data} visible={visible} onCancel={this.handleCancel} onCreate={this.handleCreate}  title="确认信息" okText="提交"/>}
+                    {<SureMessageForm key={data.key} ref={this.saveFormRef} postData={data} visible={visible} onCancel={this.handleCancel} onCreate={this.handleCreate}  title="确认信息" okText="提交"/>}
                 </div>
             </div>
         )

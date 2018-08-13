@@ -21,7 +21,7 @@ export default class FormTable extends Component{
         this.setState({ selectedRowKeys });
     }
     render(){
-        const {auth,checkChange, onPass, pagination, dataSource, loading } = this.props;
+        const {auth,checkChange,onPass,detailTag, pagination, dataSource, loading ,showDetail} = this.props;
         const rowSelection = {
             onChange: checkChange,
             getCheckboxProps: record => ({
@@ -29,7 +29,8 @@ export default class FormTable extends Component{
             }),
         };
         var columns=[];
-        if(auth){
+
+        if(showDetail){
             columns=[
                 {
                     title: '用户ID',
@@ -47,7 +48,8 @@ export default class FormTable extends Component{
                     title: '认可数',
                     dataIndex: 'tagTimes',
                     width: 70,
-                }, {
+                },
+                {
                     title: '审核操作',
                     dataIndex: 'opera',
                     width:80,
@@ -55,167 +57,98 @@ export default class FormTable extends Component{
                     render:(text, record) =>
                         <div className='opera'>
                             <div style={{textAlign:"center",width:"100%"}}>
-                                    <Button type="default" onClick={() => onPass(record.key,record.company,record.position,record.tagTimes,record.name)} style={{width:'40%'}}>
-                                        通过
-                                    </Button>
+                                <Button type="default" onClick={() => onPass(record.uid,record.company,record.position,record.tagTimes,record.name,record.tag)} style={{width:'30%'}}>
+                                    通过
+                                </Button>
                             </div>
                         </div>
 
                 }]
-        }else {
-            columns=[
-                {
-                    title: '审核人员ID',
-                    dataIndex: 'authId',
-                    width:120,
-                }, {
-                    title: '审核时间',
-                    dataIndex: 'authTime',
-                    width:80,
-                },{
-                    title: '用户ID',
-                    dataIndex: 'uid',
-                    width:120,
-                }, {
-                    title: '用户名',
-                    dataIndex: 'name',
-                    width:80,
-                },{
-                    title: '公司名+职位',
-                    dataIndex: 'CompanyAndPosition',
-                    width: 80,
-                }]
+        }else{
+            if(auth){
+                columns=[
+                    {
+                        title: '用户ID',
+                        dataIndex: 'uid',
+                        width:120,
+                    }, {
+                        title: '用户名',
+                        dataIndex: 'name',
+                        width:80,
+                    },{
+                        title: '公司名+职位',
+                        dataIndex: 'CompanyAndPosition',
+                        width: 80,
+                    }, {
+                        title: '最多认可数',
+                        dataIndex: 'tagTimes',
+                        width: 70,
+                    }, {
+                        title: '审核操作',
+                        dataIndex: 'opera',
+                        width:80,
+                        className:'imgtd',
+                        render:(text, record) =>
+                            <div className='opera'>
+                                <div style={{textAlign:"center",width:"100%"}}>
+                                    {/*<Button type="default" onClick={() => onPass(record.key,record.company,record.position,record.tagTimes,record.name)} style={{width:'30%'}}>*/}
+                                        {/*通过*/}
+                                    {/*</Button>*/}
+                                    <Button type="default" onClick={() => detailTag(record.key)} style={{width:'30%',marginLeft:20}}>
+                                        查看详情
+                                    </Button>
+                                </div>
+                            </div>
+
+                    }]
+            }else {
+                columns=[
+                    {
+                        title: '审核人员ID',
+                        dataIndex: 'authId',
+                        width:120,
+                    }, {
+                        title: '审核时间',
+                        dataIndex: 'authTime',
+                        width:80,
+                    },{
+                        title: '用户ID',
+                        dataIndex: 'uid',
+                        width:120,
+                    }, {
+                        title: '用户名',
+                        dataIndex: 'name',
+                        width:80,
+                    },{
+                        title: '公司名+职位',
+                        dataIndex: 'CompanyAndPosition',
+                        width: 80,
+                    },{
+                        title: '标签',
+                        dataIndex: 'tag',
+                        width: 80,
+                    }]
+            }
         }
-        // if(authRequest){
-        //     columns=[
-        //         {
-        //             title: '提交时间',
-        //             dataIndex: 'committime',
-        //             sorter: (a, b) => moment(a.committime) - moment(b.committime),
-        //             width:120,
-        //         }, {
-        //             title: '账号',
-        //             dataIndex: 'account',
-        //             sorter: (a, b) => moment(a.account) - moment(b.account),
-        //             width:80,
-        //         },{
-        //             title: '姓名',
-        //             dataIndex: 'name',
-        //             width: 80,
-        //         }, {
-        //             title: '性别',
-        //             dataIndex: 'sex',
-        //             // filters: [
-        //             //     { text: '男', value: '男' },
-        //             //     { text: '女', value: '女' },
-        //             // ],
-        //             // onFilter: (value, record) => record.sex.indexOf(value) === 0,
-        //             width: 70,
-        //         }, {
-        //             title: '公司名',
-        //             dataIndex: 'companyname',
-        //             width: 100,
-        //         },{
-        //             title: '职位',
-        //             dataIndex: 'position',
-        //             width: 100,
-        //         }, {
-        //             title: '证明图片',
-        //             dataIndex: 'provimg',
-        //             width: 80,
-        //             className:'imgtd',
-        //             render:(text, record) =>
-        //                 <Button type="primary" onClick={() => getImg(record.key,record.name,record.companyname,record.provimg)}>查看图片</Button>
-        //         },{
-        //             title: '审核操作',
-        //             dataIndex: 'opera',
-        //             width:80,
-        //             className:'imgtd',
-        //             render:(text, record) =>
-        //                 <div className='opera'>
-        //                     <div style={{display:"flex",width:"100%"}}>
-        //                         <div style={{width:"50%"}}>
-        //                             <Button type="default" onClick={() => onDelete(record.key,"pass")}>
-        //                                 通过
-        //                             </Button>
-        //                         </div>
-        //                         <div style={{width:"50%"}}>
-        //                             <Button type="default" onClick={() => onDelete(record.key,"reject")}>
-        //                                 拒绝
-        //                             </Button>
-        //                         </div>
-        //                     </div>
-        //                 </div>
-        //
-        //         }]
-        // }else if(passRequest || rejectRequest){
-        //     columns=[
-        //         {
-        //             title: '提交时间',
-        //             dataIndex: 'committime',
-        //             sorter: (a, b) => moment(a.committime) - moment(b.committime),
-        //             width:120,
-        //         }, {
-        //             title: '账号',
-        //             dataIndex: 'account',
-        //             sorter: (a, b) => moment(a.account) - moment(b.account),
-        //             width:80,
-        //         },{
-        //             title: '姓名',
-        //             dataIndex: 'name',
-        //             width: 80,
-        //         }, {
-        //             title: '性别',
-        //             dataIndex: 'sex',
-        //             // filters: [
-        //             //     { text: '男', value: '男' },
-        //             //     { text: '女', value: '女' },
-        //             // ],
-        //             // onFilter: (value, record) => record.sex.indexOf(value) === 0,
-        //             width: 70,
-        //         }, {
-        //             title: '公司名',
-        //             dataIndex: 'companyname',
-        //             width: 100,
-        //         },{
-        //             title: '职位',
-        //             dataIndex: 'position',
-        //             width: 100,
-        //         }, {
-        //             title: '证明图片',
-        //             dataIndex: 'provimg',
-        //             width:80,
-        //
-        //             className:'imgtd',
-        //             render:(text, record) =>
-        //                 <Button type="primary" onClick={() => getImg(record.key,record.name,record.companyname,record.provimg)}>查看图片</Button>
-        //         },{
-        //             title: '审核人',
-        //             dataIndex: 'auditman',
-        //             width: 100,
-        //         },{
-        //             title: '审核时间',
-        //             dataIndex: 'audittime',
-        //             width: 120,
-        //         }]
-        // }
         return(
             <Table
-                onPass = {onPass}
-                columns={columns}
-                dataSource={dataSource}
-                bordered={true}
-                scroll={{x:'100%'}}
-                className='formTable'
-                loading={loading}
-                scroll={{ x: 1000 }}
-                pagination={pagination}
-                onRow={(record) => ({
-                    onClick: () => {
-                        this.selectRow(record);
-                    },
-                })}
-            />
+                    onPass ={onPass}
+                    detailTag ={detailTag}
+                    columns={columns}
+                    dataSource={dataSource}
+                    bordered={true}
+                    scroll={{x:'100%'}}
+                    className='formTable'
+                    loading={loading}
+                    scroll={{ x: 1000 }}
+                    pagination={!showDetail?pagination:false}
+                    onRow={(record) => ({
+                        onClick: () => {
+                            this.selectRow(record);
+                        },
+                    })}
+                />
+
         )
     }
 }
