@@ -517,7 +517,7 @@ export default class UForm extends Component{
                         pagination={pagination}
                     />
                     {<SureMessageForm authType={authType} ref={this.saveFormRef} visible={visible} onCancel={this.handleCancel} onCreate={(passType)=>this.handleCreate(uid,authType,passType)}  title="确认信息" okText="提交"/>}
-                    {<ProveImgForm  visible={imgVisible} onCancel={this.handleCancelImg}  imgSrc={imgSrc} name={name} companyname={companyname} title="证明图片" />}
+                    {<ProveImgForm visible={imgVisible} onCancel={this.handleCancelImg}  imgSrc={imgSrc} name={name} companyname={companyname} title="证明图片" />}
                 </div>
             </div>
         )

@@ -21,7 +21,7 @@ export default class FormTable extends Component{
         this.setState({ selectedRowKeys });
     }
     render(){
-        const {auth,checkChange,onPass,detailTag, pagination, dataSource, loading ,showDetail} = this.props;
+        const {auth,checkChange,onPass,detailTag, pagination, dataSource, loading ,showDetail,getImg} = this.props;
         const rowSelection = {
             onChange: checkChange,
             getCheckboxProps: record => ({
@@ -32,6 +32,11 @@ export default class FormTable extends Component{
 
         if(showDetail){
             columns=[
+                {
+                    title: '时间',
+                    dataIndex: 'updateTime',
+                    width:120,
+                },
                 {
                     title: '用户ID',
                     dataIndex: 'uid',
@@ -48,8 +53,7 @@ export default class FormTable extends Component{
                     title: '认可数',
                     dataIndex: 'tagTimes',
                     width: 70,
-                },
-                {
+                }, {
                     title: '审核操作',
                     dataIndex: 'opera',
                     width:80,
@@ -68,12 +72,21 @@ export default class FormTable extends Component{
             if(auth){
                 columns=[
                     {
+                        title: '申请时间',
+                        dataIndex: 'updateTime',
+                        width:120,
+                    },
+                    {
                         title: '用户ID',
                         dataIndex: 'uid',
                         width:120,
                     }, {
                         title: '用户名',
                         dataIndex: 'name',
+                        width:80,
+                    }, {
+                        title: '注册ID',
+                        dataIndex: 'phone',
                         width:80,
                     },{
                         title: '公司名+职位',
@@ -84,6 +97,14 @@ export default class FormTable extends Component{
                         dataIndex: 'tagTimes',
                         width: 70,
                     }, {
+                        title: '证明图片',
+                        dataIndex: 'provimg',
+                        width:80,
+
+                        className:'imgtd',
+                        render:(text, record) =>
+                            record.provimg==null?"无":<Button type="primary" onClick={() => getImg(record.key,record.name,record.companyname,"https://sf.athena.pub/"+record.provimg)}>查看图片</Button>
+                    },{
                         title: '审核操作',
                         dataIndex: 'opera',
                         width:80,
@@ -104,14 +125,11 @@ export default class FormTable extends Component{
             }else {
                 columns=[
                     {
-                        title: '审核人员ID',
-                        dataIndex: 'authId',
-                        width:120,
-                    }, {
                         title: '审核时间',
                         dataIndex: 'authTime',
                         width:80,
-                    },{
+                    },
+                    {
                         title: '用户ID',
                         dataIndex: 'uid',
                         width:120,
@@ -119,14 +137,43 @@ export default class FormTable extends Component{
                         title: '用户名',
                         dataIndex: 'name',
                         width:80,
+                    }, {
+                        title: '注册ID',
+                        dataIndex: 'phone',
+                        width:80,
                     },{
                         title: '公司名+职位',
                         dataIndex: 'CompanyAndPosition',
                         width: 80,
                     },{
+                        title: '证明图片',
+                        dataIndex: 'provimg',
+                        width:80,
+
+                        className:'imgtd',
+                        render:(text, record) =>
+                            record.provimg==null?"无":<Button type="primary" onClick={() => getImg(record.key,record.name,record.CompanyAndPosition,"https://sf.athena.pub/"+record.provimg)}>查看图片</Button>
+                    },{
                         title: '标签',
                         dataIndex: 'tag',
                         width: 80,
+                    },{
+                        title: '编辑',
+                        dataIndex: 'opera',
+                        width:80,
+                        className:'imgtd',
+                        render:(text, record) =>
+                            <div className='opera'>
+                                <div style={{textAlign:"center",width:"100%"}}>
+                                    {/*<Button type="default" onClick={() => onPass(record.key,record.company,record.position,record.tagTimes,record.name)} style={{width:'30%'}}>*/}
+                                    {/*通过*/}
+                                    {/*</Button>*/}
+                                    <Button type="default" onClick={() => detailTag(record.key)} style={{width:'30%',marginLeft:20}}>
+                                        查看详情
+                                    </Button>
+                                </div>
+                            </div>
+
                     }]
             }
         }

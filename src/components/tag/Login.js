@@ -9,19 +9,30 @@ class NormalLoginForm extends Component {
     state = {
         isLoding:false,
         isRegist:false,
+        loading:false
     };
     handleLogin = (values) =>{
         var that =this;
         var params = {"name":values.username,"password":values.password}
         axios.post(config.baseUrl+"eos_web/v1/login",JSON.stringify(params),{headers:{"Content-Type":"application/json"}}).then(function (res) {
+
             if(res.data.code == 200 && res.data.success){
+                that.setState({
+                    loading:false
+                })
                 localStorage.setItem("userName",res.data.data.userName);
                 message.success('登陆成功!');
                 that.props.history.push({pathname:'/eos_tag_web/form',state:values.username});
             }else {
+                that.setState({
+                    loading:false
+                })
                 message.error(res.data.msg);
             }
         }).catch(function (err) {
+            that.setState({
+                loading:false
+            })
             console.log("err:"+err);
         })
     }
@@ -34,6 +45,9 @@ class NormalLoginForm extends Component {
                 // }else {
                 //     this.handleLogin(values)
                 // }
+                this.setState({
+                    loading:true
+                })
                 this.handleLogin(values)
             }
         });
@@ -50,6 +64,7 @@ class NormalLoginForm extends Component {
     }
     render() {
         const { getFieldDecorator } = this.props.form;
+        const {loading}=this.state
         return (
             this.state.isLoding?<Spin size="large" className="loading" />:
             <div className="login">
@@ -71,7 +86,7 @@ class NormalLoginForm extends Component {
                             )}
                         </FormItem>
                         <FormItem style={{marginBottom:'0'}}>
-                            <Button type="primary" htmlType="submit" className="login-form-button" style={{width: '100%'}}>
+                            <Button type="primary" htmlType="submit" loading={loading} className="login-form-button" style={{width: '100%'}}>
                                 {/*{this.state.isRegist?"注册":"登录"}*/}
                                 登陆
                             </Button>
